@@ -1,6 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review
+from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review, Order, OrderItem
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -57,4 +57,16 @@ class ColorProductSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
+        fields = '__all__'
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
         fields = '__all__'

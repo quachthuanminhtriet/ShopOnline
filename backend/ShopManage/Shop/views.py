@@ -2,7 +2,7 @@ from rest_framework import viewsets, generics, parsers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers, paginators
-from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review
+from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review, Order, OrderItem
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
@@ -56,9 +56,9 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
             if q:
                 queryset = queryset.filter(name__icontains=q)
 
-            user_id = self.request.query_params.get('user_id')
-            if user_id:
-                queryset = queryset.filter(user_id=user_id)
+            cate_id = self.request.query_params.get('category_id')
+            if cate_id:
+                queryset = queryset.filter(category_id=cate_id)
 
         return queryset
 
@@ -81,3 +81,17 @@ class ColorProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Creat
 class ReviewViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
     queryset = Review.objects.filter(active=True)
     serializer_class = serializers.ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
+    queryset = Order.objects.filter(active=True)
+    serializer_class = serializers.OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class OrderItemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
+    queryset = OrderItem.objects.filter(active=True)
+    serializer_class = serializers.OrderItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    paginator_class = paginators.OrderItemPaginator
