@@ -42,11 +42,9 @@ class CustomerViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPI
         return queryset
 
 
-class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
+class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Category.objects.filter(active=True)
     serializer_class = serializers.CategorySerializer
-
-    pagination_class = paginators.ProductPaginator
 
     def get_queryset(self):
         queryset = self.queryset

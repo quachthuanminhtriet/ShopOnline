@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-4b$5^2=ocm#5p1ru%m9cfnhgr72k((85!%xs)xpau5!q6r#_2s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost',
+                 '127.0.0.1',
+                 'localhost:3000', ]
 
 
 # Application definition
@@ -53,6 +55,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+]
+
+AUTH_USER_MODEL = 'Shop.User'
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React app running locally
+    "https://yourdomain.com",  # Your production domain
 ]
 
 ROOT_URLCONF = 'ShopManage.urls'
