@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers, paginators
 from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review, Order, OrderItem
+from .serializers import ProductSerializer
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
@@ -46,6 +47,12 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPI
     queryset = Category.objects.filter(active=True)
     serializer_class = serializers.CategorySerializer
 
+
+class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
+    queryset = Product.objects.filter(active=True)
+    serializer_class = serializers.ProductSerializer
+    pagination_class = paginators.ProductPaginator
+
     def get_queryset(self):
         queryset = self.queryset
 
@@ -54,16 +61,24 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPI
             if q:
                 queryset = queryset.filter(name__icontains=q)
 
-            cate_id = self.request.query_params.get('category_id')
+            cate_id = self.request.query_params.get('cate_id')
             if cate_id:
-                queryset = queryset.filter(category_id=cate_id)
+                queryset = queryset.filter(cate_id=cate_id)
+
+            min_price = self.request.query_params.get('min_price')
+            max_price = self.request.query_params.get('max_price')
+
+            if min_price:
+                queryset = queryset.filter(price__gte=int(min_price))
+            elif max_price:
+                queryset = queryset.filter(price__lte=int(max_price))
+            elif min_price and max_price:
+                queryset = queryset.filter(price__range=(int(min_price), int(max_price)))
 
         return queryset
 
-
-class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
-    queryset = Product.objects.filter(active=True)
-    serializer_class = serializers.ProductSerializer
+    def price_update(self, request, *args, **kwargs):
+        return super().partial_update(request,   *args, **kwargs)
 
 
 class ImageProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
