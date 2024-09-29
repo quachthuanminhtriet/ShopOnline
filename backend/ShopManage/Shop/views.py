@@ -48,7 +48,7 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPI
     serializer_class = serializers.CategorySerializer
 
 
-class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
+class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Product.objects.filter(active=True)
     serializer_class = serializers.ProductSerializer
     pagination_class = paginators.ProductPaginator
@@ -77,8 +77,13 @@ class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIV
 
         return queryset
 
-    def price_update(self, request, *args, **kwargs):
-        return super().partial_update(request,   *args, **kwargs)
+    @action(methods=['patch'], url_path='update_price', detail=True)
+    def update_price(self, request, pk):
+        product = self.get_object()
+        product.price = request.data.get('price', product.price)
+        product.save()
+
+        return Response(serializers.ProductSerializer(product).data)
 
 
 class ImageProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
