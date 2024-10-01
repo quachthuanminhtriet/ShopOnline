@@ -2,8 +2,9 @@ from rest_framework import viewsets, generics, parsers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers, paginators
-from .models import User, Customer, Category, Product, ImageProduct, ColorProduct, Review, Order, OrderItem
-from .serializers import ProductSerializer
+from .email import send_confirmation_email
+from .models import User, Customer, Category, Product, ImageProduct, Review, Order, Brand, \
+    ImageBanner, OrderItem
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
@@ -51,7 +52,6 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPI
 class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Product.objects.filter(active=True)
     serializer_class = serializers.ProductSerializer
-    pagination_class = paginators.ProductPaginator
 
     def get_queryset(self):
         queryset = self.queryset
@@ -65,35 +65,31 @@ class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIV
             if cate_id:
                 queryset = queryset.filter(cate_id=cate_id)
 
-            min_price = self.request.query_params.get('min_price')
-            max_price = self.request.query_params.get('max_price')
-
-            if min_price:
-                queryset = queryset.filter(price__gte=int(min_price))
-            elif max_price:
-                queryset = queryset.filter(price__lte=int(max_price))
-            elif min_price and max_price:
-                queryset = queryset.filter(price__range=(int(min_price), int(max_price)))
+            brand = self.request.query_params.get('brand')
+            if brand:
+                queryset = queryset.filter(brand=brand)
 
         return queryset
 
-    @action(methods=['patch'], url_path='update_price', detail=True)
-    def update_price(self, request, pk):
-        product = self.get_object()
-        product.price = request.data.get('price', product.price)
-        product.save()
-
-        return Response(serializers.ProductSerializer(product).data)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class ImageProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = ImageProduct.objects.filter(active=True)
     serializer_class = serializers.ImageProductSerializer
 
+    def get_queryset(self):
+        queryset = self.queryset
 
-class ColorProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
-    queryset = ColorProduct.objects.filter(active=True)
-    serializer_class = serializers.ColorProductSerializer
+        if self.action.__eq__('list'):
+            pro_id = self.request.query_params.get('product')
+            if pro_id:
+                queryset = queryset.filter(product=pro_id)
+
+        return queryset
 
 
 class ReviewViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
@@ -102,14 +98,50 @@ class ReviewViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVi
     permission_classes = [permissions.IsAuthenticated]
 
 
-class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
+class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView,
+                   generics.DestroyAPIView):
     queryset = Order.objects.filter(active=True)
     serializer_class = serializers.OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action.__eq__('list'):
+            customer_id = self.request.query_params.get('customer_id')
+            status = self.request.query_params.get('status')
+            if customer_id:
+                queryset = queryset.filter(customer_id=customer_id)
+            if status:
+                queryset = queryset.filter(status=status)
+
+        return queryset
 
 
 class OrderItemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
     queryset = OrderItem.objects.filter(active=True)
     serializer_class = serializers.OrderItemSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    paginator_class = paginators.OrderItemPaginator
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action.__eq__('list'):
+            order_id = self.request.query_params.get('order_id')
+            if order_id:
+                queryset = queryset.filter(order_id=order_id)
+
+        return queryset
+
+
+class BrandViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
+    queryset = Brand.objects.filter(active=True)
+    serializer_class = serializers.BranchSerializer
+
+
+# class VoucherViewSet(viewsets.ViewSet, generics.ListAPIView):
+#     queryset = Voucher.objects.filter(active=True)
+#     serializer_class = serializers.VoucherSerializer
+
+class ImageBannerViewSet(viewsets.ModelViewSet, generics.ListAPIView):
+    queryset = ImageBanner.objects.filter(active=True)
+    serializer_class = serializers.ImageBannerSerializer

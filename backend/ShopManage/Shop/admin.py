@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import User, Customer, Category, Product, ImageProduct, ColorProduct
+from .models import User, Customer, Category, Product, ImageProduct, Order, Brand, ImageBanner, \
+    OrderItem
 
 
 class CourseAppAdminSite(admin.AdminSite):
@@ -13,5 +14,8 @@ admin_site.register(Customer)
 admin_site.register(Category)
 admin_site.register(Product)
 admin_site.register(ImageProduct)
-admin_site.register(ColorProduct)
+admin_site.register(Order)
+admin_site.register(OrderItem)
+admin_site.register(Brand)
+admin_site.register(ImageBanner)
 

@@ -5,7 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4f221b20-4c5c-444f-9324-19b0d4f23a38" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/ShopManage/Shop/email.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0002_order_orderitem.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/paginators.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/paginators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/ShopManage/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/ShopManage/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Index/Index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Index/Index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Layout/Footer.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Layout/Header.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Layout/Layout.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Product/Details.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/configs/APIs.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/configs/APIs.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

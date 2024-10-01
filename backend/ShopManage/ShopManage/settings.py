@@ -141,10 +141,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-OAUTH2_PROVIDER = {
-    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'
-}
-
 
 
 # Internationalization
@@ -169,5 +165,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CLIENT_ID = 'o8bHHphggc8MGPoEdpU4TM23FEL6UYEnFGnZxk18'
-CLIENT_SECRET = 'I2r47QOVEaBEaA31dPwsIYbkgmbfC9J12au0d41RppLRbbLdXP6hXydtwy6MngagJvlvr795ApCacJVbS0DnU6S96lDMU4joiTPyWJnDiMT2GksvuYGWm84PsmIHNaIC'
+CLIENT_ID = 'BnTQGgbpuHdzDOEaAlJOIt3egH9Z5yrRGPU5AXug'
+CLIENT_SECRET = 'q1FGEQvL8YzSWEV45pBP2x3E5VMIiBTPFAGdSHLFwYjOOD2hM3AhneTZcrY8qEXOvJItlgOpGxR0zhKhu0gVYAUJDNlzYPGhFnqjwwgwbWfx9XnkOujyg3wAPlI5GMta'

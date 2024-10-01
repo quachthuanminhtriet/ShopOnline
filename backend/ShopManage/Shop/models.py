@@ -64,7 +64,6 @@ class Product(BaseModel):
     name = models.CharField(max_length=255, null=False)
     price = models.IntegerField(null=False)
     cate_id = models.ForeignKey(Category, on_delete=models.PROTECT, null=False)
-    color = models.CharField(max_length=55, null=False)
     size = models.IntegerField(null=False)
     stock = models.IntegerField(null=False)
 
@@ -84,17 +83,6 @@ class ImageProduct(BaseModel):
 
     def __str__(self):
         return f"{self.product.code} - {self.image}"
-
-
-class ColorProduct(BaseModel):
-    color = models.CharField(max_length=55, null=False)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False)
-
-    class Meta:
-        verbose_name_plural = 'Màu Sản Phẩm'
-
-    def __str__(self):
-        return f"{self.product.code} - {self.color}"
 
 
 class Review(BaseModel):
@@ -138,3 +126,37 @@ class OrderItem(BaseModel):
 
     def __str__(self):
         return f"{self.order_id} - {self.product_id} - {self.quantity}"
+
+
+class Brand(BaseModel):
+    code = models.CharField(max_length=10, unique=True, null=False)
+    name = models.CharField(max_length=255, null=False)
+
+    class Meta:
+        verbose_name_plural = 'Thương Hiệu'
+
+    def __str__(self):
+        return self.name
+
+
+# class Voucher(BaseModel):
+#     code = models.CharField(max_length=50, unique=True)
+#     valid_from = models.DateTimeField()
+#     valid_to = models.DateTimeField()
+#     discount_percentage = models.IntegerField(default=0)
+#     active = models.BooleanField(default=True)
+#
+#     class Meta:
+#         verbose_name_plural = 'Phiếu giảm giá'
+#
+#     def __str__(self):
+#         return self.code
+
+class ImageBanner(BaseModel):
+    image = CloudinaryField(null=True)
+
+    class Meta:
+        verbose_name_plural = 'Hình ảnh minh hoạ'
+
+    def __str__(self):
+        return f"{self.image}"
