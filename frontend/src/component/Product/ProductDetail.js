@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, Spinner, Button, Container, Row, Col, Alert, Form } from 'react-bootstrap';
+import { Card, Spinner, Button, Container, Row, Col, Alert, Form, Image } from 'react-bootstrap';
 import APIs from '../../configs/APIs';
 
 const ProductDetail = ({ cart, setCart }) => {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedColor, setSelectedColor] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
     const [showAlert, setShowAlert] = useState(false);
     const [reviews, setReviews] = useState([]);
     const [newReview, setNewReview] = useState('');
@@ -18,7 +18,7 @@ const ProductDetail = ({ cart, setCart }) => {
             try {
                 const res = await APIs.get(`/products/${id}/`);
                 setProduct(res.data);
-                setReviews(res.data.reviews || []); // Assuming reviews are included in the product data
+                setReviews(res.data.reviews || []);
             } catch (error) {
                 console.error("Error fetching the product:", error);
             } finally {
@@ -30,27 +30,28 @@ const ProductDetail = ({ cart, setCart }) => {
     }, [id]);
 
     const addToCart = () => {
-        if (!selectedColor) {
-            alert("Please select a color");
+        if (!selectedImage) {
+            alert("Please select a product");
             return;
         }
 
-        const existingItem = cart.find(item => item.productId === product.id);
+        const existingItem = cart.find(item => item.productId === product.id && item.selectedImage === selectedImage);
         if (existingItem) {
-            setCart(cart.map(item => 
-                item.productId === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            setCart(cart.map(item =>
+                item.productId === product.id && item.selectedImage === selectedImage
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
             ));
         } else {
             setCart([...cart, {
                 productId: product.id,
                 name: product.name,
                 price: product.price,
-                image: product.main_image,
-                selectedColor,
+                selectedImage,
                 quantity: 1
             }]);
         }
-        
+
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 2000);
     };
@@ -61,8 +62,6 @@ const ProductDetail = ({ cart, setCart }) => {
             alert("Please provide a review and a rating");
             return;
         }
-
-        // Logic to submit the review, e.g., API call
         const submittedReview = { text: newReview, rating };
         setReviews([...reviews, submittedReview]);
         setNewReview('');
@@ -105,16 +104,16 @@ const ProductDetail = ({ cart, setCart }) => {
                                     <Card.Text>
                                         <strong>Giá:</strong> {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                                     </Card.Text>
-                                    <Card.Text><strong>Màu sắc:</strong></Card.Text>
+                                    <Card.Text><strong>Chọn sản phẩm:</strong></Card.Text>
                                     <div className="mb-3">
-                                        {product.colors && product.colors.map(color => (
+                                        {product.images && product.images.map((image, index) => (
                                             <Button
-                                                key={color}
-                                                variant={selectedColor === color ? 'primary' : 'outline-primary'}
-                                                onClick={() => setSelectedColor(color)}
-                                                className="me-2 mb-2"
+                                                key={index}
+                                                variant={selectedImage === image ? 'primary' : 'outline-primary'}
+                                                onClick={() => setSelectedImage(image)}
+                                                className="me-2 mb-2 w-25"
                                             >
-                                                {color}
+                                                <Card.Img variant="top" src={image} alt={`${product.name} image ${index + 1}`} className="img-fluid w-75" />
                                             </Button>
                                         ))}
                                     </div>
@@ -124,7 +123,7 @@ const ProductDetail = ({ cart, setCart }) => {
                             </Col>
                         </Row>
                     </Card>
-                    
+
                     {/* Image Gallery */}
                     <Card className="mt-4 border-0 shadow-sm">
                         <Card.Body>

@@ -76,7 +76,7 @@ class Product(BaseModel):
 
 class ImageProduct(BaseModel):
     image = CloudinaryField(null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False, related_name='images')
 
     class Meta:
         verbose_name_plural = 'Hình Ảnh Sản Phẩm'
@@ -99,8 +99,8 @@ class Review(BaseModel):
 
 
 class Order(BaseModel):
-    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    total_quantity = models.IntegerField(null=True, blank=True)
+    customer_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    # total_quantity = models.IntegerField(null=True, blank=True)
     total_price = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=50, null=False,
                               choices=[('pending', 'Chờ xác nhận'),

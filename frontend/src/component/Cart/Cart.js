@@ -30,10 +30,9 @@ const Cart = ({ cart, setCart }) => {
             const customerId = userResponse.data.id;
 
             const orderResponse = await APIs.post(endpoints['orders'], {
-                customer_id: customerId,
-                total_quantity: totalQuantity,                   
+                customer_id: customerId,           
                 total_price: totalPrice,
-                
+                status: 'pending'
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
@@ -64,13 +63,12 @@ const Cart = ({ cart, setCart }) => {
                             {cart.map(item => (
                                 <Col key={item.productId} md={4} className="mb-3">
                                     <Card className="h-100 text-center">
-                                        <Card.Img variant="top" src={item.image} alt={item.name} className="img-fluid" />
+                                        <Card.Img src={item.selectedImage} alt={item.name} className="w-50 mx-auto mt-2" />
                                         <Card.Body>
                                             <Card.Title>{item.name}</Card.Title>
                                             <Card.Text>
                                                 <strong>Price:</strong> {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                                             </Card.Text>
-                                            <Card.Text><strong>Color:</strong> {item.selectedColor}</Card.Text>
                                             <Card.Text>
                                                 <strong>Quantity:</strong>
                                                 <input

@@ -28,8 +28,8 @@ const Login = () => {
                 grant_type: 'password',
                 username: username,
                 password: password,
-                client_id: 'BnTQGgbpuHdzDOEaAlJOIt3egH9Z5yrRGPU5AXug',
-                client_secret: 'q1FGEQvL8YzSWEV45pBP2x3E5VMIiBTPFAGdSHLFwYjOOD2hM3AhneTZcrY8qEXOvJItlgOpGxR0zhKhu0gVYAUJDNlzYPGhFnqjwwgwbWfx9XnkOujyg3wAPlI5GMta',
+                client_id: '7CtAZImYVFr2C0bMWE9a9iqHZY9Js3dEWBukpT4T',
+                client_secret: 'HHkAvSJA87HihZr4AyAilU6cG7m1sNk3YOEW8U3xrIzkKA5zDkuzYTSkjhrw5gGN4VXG3ci6PGFrulM62XRiOLk50HxNGkOyNXoi7klP7C0Gt84n6Y31mJa7NfIfN4kQ',
             }, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,8 +37,8 @@ const Login = () => {
             });
 
             const { access_token } = response.data;
-            localStorage.setItem('access_token', access_token); // Store access token
-            navigate('/'); // Redirect to home or dashboard after successful login
+            localStorage.setItem('access_token', access_token);
+            navigate('/');
         } catch (err) {
             setError("Login failed! Please check your credentials.");
             console.error("Login error:", err.response ? err.response.data : err);

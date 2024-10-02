@@ -40,7 +40,6 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
-    colors = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
