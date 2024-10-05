@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, Spinner, Button, Container, Row, Col, Alert, Form, Image } from 'react-bootstrap';
+import { Card, Spinner, Button, Container, Row, Col, Alert, Form } from 'react-bootstrap';
 import APIs from '../../configs/APIs';
 
 const ProductDetail = ({ cart, setCart }) => {

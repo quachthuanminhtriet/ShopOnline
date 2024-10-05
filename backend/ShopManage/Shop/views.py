@@ -2,7 +2,7 @@ from rest_framework import viewsets, generics, parsers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers, paginators
-from .email import send_confirmation_email
+from .email import send_confirmation_email, send_notification_to_staff, send_notification_to_user
 from .models import User, Customer, Category, Product, ImageProduct, Review, Order, Brand, \
     ImageBanner, OrderItem
 
@@ -32,16 +32,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
 class CustomerViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView):
     queryset = Customer.objects.filter(active=True)
     serializer_class = serializers.CustomerSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        queryset = self.queryset
 
-        if self.action.__eq__('list'):
-            q = self.request.query_params.get('q')
-            if q:
-                queryset = queryset.filter(code__icontains=q)
-
-        return queryset
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
@@ -117,11 +110,49 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
 
         return queryset
 
+    @action(methods=['patch'], detail=True)
+    def cancel_order(self, request, pk=None):
+        order = self.get_object()
+        if order.status == 'processing':
+            order.status = 'pending-2'
+            order.save()
+            user_email = order.customer_id.email
+            send_notification_to_staff(order.id, "Người dùng đã yêu cầu hủy đơn hàng.", user_email)
+
+            return Response({"status": "Order is now pending confirmation. Notification sent to staff."})
+        return Response({"error": "Cannot cancel this order."}, status=400)
+
+    @action(methods=['patch'], detail=True)
+    def return_order(self, request, pk=None):
+        order = self.get_object()
+        if order.status == 'delivered':
+            order.status = 'pending-2'
+            order.save()
+            user_email = order.customer_id.email
+            send_notification_to_staff(order.id, "Người dùng đã yêu cầu hoàn trả đơn hàng.", user_email)
+
+            return Response({"status": "Order is now pending confirmation. Notification sent to staff."})
+        return Response({"error": "Cannot return this order."}, status=400)
+
+    @action(methods=['patch'], detail=True, url_path='confirm-return')
+    def confirm_return(self, request, pk=None):
+        order = self.get_object()
+        if order.status == 'pending-2':
+            order.status = 'returned'
+            order.save()
+            user_email = order.customer_id.email
+            send_notification_to_staff(order.id, "Đơn hàng đã được shop xác nhận hoàn trả.", user_email)
+            send_notification_to_user(user_email,
+                                      f"Đơn hàng #{order.id} của bạn đã được xác nhận hoàn trả và đang được gửi đến shipper.",
+                                      order.id)
+            return Response({"status": "Order has been confirmed for return. Notification sent to staff and user."})
+        return Response({"error": "Cannot confirm return for this order."}, status=400)
+
 
 class OrderItemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
     queryset = OrderItem.objects.filter(active=True)
     serializer_class = serializers.OrderItemSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset

@@ -57,10 +57,10 @@ const Index = ({ searchQuery, cateId }) => {
                     </Carousel>
                 </div>
             </Row>
-            <Row className="mt-2">
+            <Row className="mt-2">                
                 <Col md={1} />
                 <Col md={3} className="text-center"><h3>Danh Sách Điện Thoại</h3></Col>
-                <Col md={8} className="me-auto ">
+                <Col md={7} className="d-flex justify-content-end me-auto">
                     {brands.map((b) => (
                         <Button className="mx-1" key={b.id} onClick={() => handleButtonClick(b.id)}
                             variant={brandId === b.id ? 'success' : 'outline-success'}>
@@ -72,6 +72,7 @@ const Index = ({ searchQuery, cateId }) => {
                         All
                     </Button>
                 </Col>
+                <Col md={1} />
             </Row>
             <Row className="mt-2">
                 <Col md={1}></Col>

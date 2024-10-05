@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 
+
 def send_confirmation_email(order):
     subject = 'Xác nhận đơn hàng của bạn'
     message = f"""
@@ -20,3 +21,29 @@ def send_confirmation_email(order):
     email_from = 'your_email@example.com'
     recipient_list = [order.customer.email]
     send_mail(subject, message, email_from, recipient_list)
+
+
+def send_notification_to_staff(order_id, message, user_email):
+    staff_email = "triet123az@gmail.com"
+    subject = f"Yêu cầu hủy đơn hàng #{order_id}"
+    body = f"{message} (Đơn hàng ID: {order_id})\n\nGửi từ: {user_email}"
+
+    send_mail(
+        subject,
+        body,
+        user_email,
+        [staff_email],
+        fail_silently=False,
+    )
+
+
+def send_notification_to_user(user_email, message, order_id):
+    subject = f"Cập nhật đơn hàng #{order_id}"
+    body = f"{message}\n\nThông tin về đơn hàng của bạn ID: {order_id}"
+    send_mail(
+        subject,
+        body,
+        'triet123az@example.com',
+        [user_email],
+        fail_silently=False,
+    )

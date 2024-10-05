@@ -59,6 +59,17 @@ class Category(BaseModel):
         return self.name
 
 
+class Brand(BaseModel):
+    code = models.CharField(max_length=10, unique=True, null=False)
+    name = models.CharField(max_length=255, null=False)
+
+    class Meta:
+        verbose_name_plural = 'Thương Hiệu'
+
+    def __str__(self):
+        return self.name
+
+
 class Product(BaseModel):
     code = models.CharField(max_length=10, unique=True, null=False)
     name = models.CharField(max_length=255, null=False)
@@ -66,6 +77,7 @@ class Product(BaseModel):
     cate_id = models.ForeignKey(Category, on_delete=models.PROTECT, null=False)
     size = models.IntegerField(null=False)
     stock = models.IntegerField(null=False)
+    brand = models.ForeignKey(Brand, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = 'Sản Phẩm'
@@ -100,43 +112,33 @@ class Review(BaseModel):
 
 class Order(BaseModel):
     customer_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    # total_quantity = models.IntegerField(null=True, blank=True)
     total_price = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=50, null=False,
                               choices=[('pending', 'Chờ xác nhận'),
+                                       ('pending-2', 'Chờ xác nhận'),
                                        ('processing', 'Đang Xử Lý'),
                                        ('shipping', 'Đang Giao Hàng'),
                                        ('delivered', 'Đã Nhận'),
-                                       ('cancelled', 'Đã Hủy')])
-
+                                       ('cancelled', 'Đã Hủy'),
+                                       ('returned', 'Hoàn Trả')])
     class Meta:
         verbose_name_plural = 'Đơn Hàng'
 
     def __str__(self):
-        return f"{self.customer_id.full_name} - {self.total_quantity} - {self.total_price} - {self.status}"
+        return f"{self.customer_id.username} - {self.total_price} - {self.status}"
 
 
 class OrderItem(BaseModel):
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_id = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
     product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(null=True, default=1)
+    selected_image = models.ForeignKey(ImageProduct, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = 'Sản phẩm đơn hàng'
 
     def __str__(self):
-        return f"{self.order_id} - {self.product_id} - {self.quantity}"
-
-
-class Brand(BaseModel):
-    code = models.CharField(max_length=10, unique=True, null=False)
-    name = models.CharField(max_length=255, null=False)
-
-    class Meta:
-        verbose_name_plural = 'Thương Hiệu'
-
-    def __str__(self):
-        return self.name
+        return f"{self.order_id.id} - {self.product_id} - {self.quantity} - {self.selected_image}"
 
 
 # class Voucher(BaseModel):

@@ -21,7 +21,7 @@ const Cart = ({ cart, setCart }) => {
 
     const checkout = async () => {
         setLoading(true);
-        setErrorMessage(''); // Reset error message
+        setErrorMessage('');
         try {
             const userResponse = await APIs.get(endpoints['current-user'], {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
@@ -30,16 +30,33 @@ const Cart = ({ cart, setCart }) => {
             const customerId = userResponse.data.id;
 
             const orderResponse = await APIs.post(endpoints['orders'], {
-                customer_id: customerId,           
+                customer_id: customerId,
                 total_price: totalPrice,
                 status: 'pending'
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
-            alert(`Order created successfully: ${orderResponse.data.order_id}`);
+
+            const orderId = orderResponse.data.id; // Capture the order ID
+
+            // Create order items for each item in the cart
+            const orderItemsPromises = cart.map(item => {
+                return APIs.post(endpoints['order-items'], {
+                    order_id: orderId,
+                    product_id: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    selected_image: item.selectedImage,
+                }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+                });
+            });
+
+            await Promise.all(orderItemsPromises);
+
             setCart([]);
-        } catch (error) {
-            console.error("Error during checkout:", error);
+        } catch (ex) {
+            console.error("Error during checkout:", ex);
             setErrorMessage("Failed to create order. Please try again.");
         } finally {
             setLoading(false);
@@ -50,6 +67,8 @@ const Cart = ({ cart, setCart }) => {
         const token = localStorage.getItem('access_token');
         setIsLoggedIn(!!token);
     }, []);
+
+
     return (
         <div className="mt-5">
             <h2 className="text-center mb-4">Your Cart</h2>

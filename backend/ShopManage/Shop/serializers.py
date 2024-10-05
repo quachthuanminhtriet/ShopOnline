@@ -73,15 +73,40 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = '__all__'
 
+    def get_items(self, obj):
+        return [
+            {
+                "id": item.id,  # ID của OrderItem
+                "product_id": item.product_id.id,
+                "product_name": item.product_id.name,
+                "quantity": item.quantity,
+                "price": item.product_id.price,
+                "selected_image": item.selected_image.image.url if item.selected_image else None
+            }
+            for item in obj.items.all()
+        ]
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    selected_image = ImageProductSerializer()
+
     class Meta:
         model = OrderItem
         fields = '__all__'
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.selected_image:
+            rep['selected_image'] = instance.selected_image.image.url
+        else:
+            rep['selected_image'] = None  # Or provide a default image URL
+        return rep
 
 
 class BranchSerializer(serializers.ModelSerializer):

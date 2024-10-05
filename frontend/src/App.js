@@ -8,6 +8,8 @@ import Index from './component/Index/Index';
 import Cart from './component/Cart/Cart';
 import ProductDetail from './component/Product/ProductDetail';
 import Login from './component/User/Login';
+import OrderTracking from './component/Order/OrderTracking';
+import Profile from './component/User/Profile';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +25,8 @@ function App() {
           <Route path='/cart' element={<Cart cart={cart} setCart={setCart} />} />
           <Route path='/products/:id' element={<ProductDetail cart={cart} setCart={setCart} />} />
           <Route path='/login' element={<Login />} />
+          <Route path='/status' element={<OrderTracking />} />
+          <Route path='/profile' element={<Profile />} />
         </Routes>
       </Container>
     </BrowserRouter>
