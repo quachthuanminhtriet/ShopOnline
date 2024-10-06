@@ -9,7 +9,7 @@ import { FaShippingFast } from "react-icons/fa";
 const Header = ({ setSearchQuery, setCateId }) => {
     const [cate, setCate] = useState([]);
     const [searchInput, setSearchInput] = useState('');
-    const [user, setUser] = useState(null); // User state
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -65,18 +65,13 @@ const Header = ({ setSearchQuery, setCateId }) => {
                 <Navbar.Collapse id="basic-navbar-nav" className="d-flex">
                     <Nav className="me-auto">
                         <NavDropdown title="Danh Mục" id="basic-nav-dropdown">
-                            <NavDropdown.Item onClick={() => handleCategorySelect('')}>All</NavDropdown.Item>
                             {cate.map((c) => (
                                 <NavDropdown.Item key={c.id} onClick={() => handleCategorySelect(c.id)}>
                                     {c.name}
                                 </NavDropdown.Item>
                             ))}
                             <NavDropdown.Divider />
-                            {user ? (
-                                <NavDropdown.Item onClick={handleLogout}>Đăng Xuất</NavDropdown.Item>
-                            ) : (
-                                <NavDropdown.Item as={Link} to="/login">Đăng Nhập</NavDropdown.Item>
-                            )}
+                            <NavDropdown.Item onClick={() => handleCategorySelect('')}>All</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Form className="d-flex w-25" onSubmit={handleSearchSubmit}>
@@ -100,11 +95,10 @@ const Header = ({ setSearchQuery, setCateId }) => {
                         </Link>
                     </Nav.Link>
                     {user ? (
-                        <Nav.Link className="mx-3 me-0">
-                            <Link to='/profile' style={{ textDecoration: 'none', color: 'white' }}>
-                                <img src={user.avatar} alt="Avatar" style={{ width: 24, height: 24, borderRadius: '50%' }} />
-                            </Link>
-                        </Nav.Link>
+                        <NavDropdown title={<img src={user.avatar} className="mx-3 me-0" alt="Avatar" style={{ width: 24, height: 24, borderRadius: '50%' }} />} id="user-dropdown">
+                            <NavDropdown.Item as={Link} to='/profile'>Profile</NavDropdown.Item>
+                            <NavDropdown.Item onClick={handleLogout}>Đăng Xuất</NavDropdown.Item>
+                        </NavDropdown>
                     ) : (
                         <Nav.Link className="mx-3 me-0">
                             <Link to='/login' style={{ textDecoration: 'none', color: 'white' }}>

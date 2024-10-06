@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
+import { Card, Button, Row, Col, Alert, Spinner, Form } from 'react-bootstrap';
+import { QRCodeCanvas } from 'qrcode.react'; // Sử dụng QRCodeCanvas
 import APIs, { endpoints } from '../../configs/APIs';
 
 const Cart = ({ cart, setCart }) => {
@@ -7,6 +8,9 @@ const Cart = ({ cart, setCart }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('cod');
+    const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [qrLoading, setQrLoading] = useState(false);
 
     const updateQuantity = (productId, newQuantity) => {
         if (newQuantity < 1) return;
@@ -19,7 +23,7 @@ const Cart = ({ cart, setCart }) => {
         setCart(cart.filter(item => item.productId !== productId));
     };
 
-    const checkout = async () => {
+    const createOrder = async () => {
         setLoading(true);
         setErrorMessage('');
         try {
@@ -32,20 +36,19 @@ const Cart = ({ cart, setCart }) => {
             const orderResponse = await APIs.post(endpoints['orders'], {
                 customer_id: customerId,
                 total_price: totalPrice,
-                status: 'pending'
+                status: paymentMethod === 'online' ? 'pending' : 'pending-2',
+                status_payment: paymentMethod === 'online' ? 'not-yet' : 'paid'
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
 
-            const orderId = orderResponse.data.id; // Capture the order ID
+            const orderId = orderResponse.data.id;
 
-            // Create order items for each item in the cart
             const orderItemsPromises = cart.map(item => {
                 return APIs.post(endpoints['order-items'], {
                     order_id: orderId,
                     product_id: item.productId,
                     quantity: item.quantity,
-                    price: item.price,
                     selected_image: item.selectedImage,
                 }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
@@ -54,12 +57,41 @@ const Cart = ({ cart, setCart }) => {
 
             await Promise.all(orderItemsPromises);
 
+            if (paymentMethod === 'online') {
+                await generateQrCode(orderId);
+            }
+
             setCart([]);
         } catch (ex) {
-            console.error("Error during checkout:", ex);
-            setErrorMessage("Failed to create order. Please try again.");
+            console.error("Lỗi trong quá trình thanh toán:", ex);
+            setErrorMessage("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const generateQrCode = async (orderId) => {
+        setQrLoading(true);
+        setErrorMessage('');
+        try {
+            const qrResponse = await APIs.post(endpoints['generate-qr'], {
+                amount: totalPrice,
+                order_id: orderId,
+            });
+            setQrCodeUrl(qrResponse.data.qr_url);
+        } catch (error) {
+            console.error("Lỗi khi tạo mã QR:", error);
+            setErrorMessage("Không thể tạo mã QR. Vui lòng thử lại.");
+        } finally {
+            setQrLoading(false);
+        }
+    };
+
+    const checkout = () => {
+        if (paymentMethod === 'online') {
+            createOrder();
+        } else {
+            createOrder();
         }
     };
 
@@ -68,13 +100,12 @@ const Cart = ({ cart, setCart }) => {
         setIsLoggedIn(!!token);
     }, []);
 
-
     return (
         <div className="mt-5">
-            <h2 className="text-center mb-4">Your Cart</h2>
+            <h2 className="text-center mb-4">Giỏ Hàng Của Bạn</h2>
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {cart.length === 0 ? (
-                <Alert variant="info" className="text-center">Your cart is empty.</Alert>
+                <Alert variant="info" className="text-center">Giỏ hàng của bạn đang trống.</Alert>
             ) : (
                 <Card className="shadow-sm">
                     <Card.Body>
@@ -86,10 +117,10 @@ const Cart = ({ cart, setCart }) => {
                                         <Card.Body>
                                             <Card.Title>{item.name}</Card.Title>
                                             <Card.Text>
-                                                <strong>Price:</strong> {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                <strong>Giá:</strong> {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                                             </Card.Text>
                                             <Card.Text>
-                                                <strong>Quantity:</strong>
+                                                <strong>Số Lượng:</strong>
                                                 <input
                                                     type="number"
                                                     value={item.quantity}
@@ -98,18 +129,47 @@ const Cart = ({ cart, setCart }) => {
                                                     onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value))}
                                                 />
                                             </Card.Text>
-                                            <Button variant="danger" onClick={() => removeFromCart(item.productId)}>Remove</Button>
+                                            <Button variant="danger" onClick={() => removeFromCart(item.productId)}>Xóa</Button>
                                         </Card.Body>
                                     </Card>
                                 </Col>
                             ))}
                         </Row>
                         <div className="text-center mt-4">
-                            <h4 className="fw-bold">Total Price: {totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h4>
+                            <h4 className="fw-bold">Tổng Giá: {totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h4>
+                            <Form.Group className="mt-3">
+                                <Form.Label>Chọn Phương Thức Thanh Toán</Form.Label>
+                                <Form.Check 
+                                    type="radio" 
+                                    label="Thanh toán khi nhận hàng" 
+                                    name="paymentMethod" 
+                                    value="cod" 
+                                    checked={paymentMethod === 'cod'} 
+                                    onChange={() => setPaymentMethod('cod')} 
+                                />
+                                <Form.Check 
+                                    type="radio" 
+                                    label="Thanh toán online" 
+                                    name="paymentMethod" 
+                                    value="online" 
+                                    checked={paymentMethod === 'online'} 
+                                    onChange={() => setPaymentMethod('online')} 
+                                />
+                            </Form.Group>
                             <Button variant="success" size="lg" onClick={checkout} disabled={!isLoggedIn || loading}>
-                                {loading ? <Spinner animation="border" size="sm" /> : "Checkout"}
+                                {loading ? <Spinner animation="border" size="sm" /> : "Thanh Toán"}
                             </Button>
                         </div>
+                        {qrCodeUrl && ( // Hiển thị mã QR nếu có
+                            <div className="text-center mt-4">
+                                <h5>Mã QR Thanh Toán:</h5>
+                                <QRCodeCanvas value={qrCodeUrl} size={256} />
+                                <p>Quét mã QR để thanh toán</p>
+                                <Button variant="primary" onClick={() => generateQrCode() } disabled={qrLoading}>
+                                    {qrLoading ? 'Đang tạo lại mã QR...' : 'Tạo lại mã QR'}
+                                </Button>
+                            </div>
+                        )}
                     </Card.Body>
                 </Card>
             )}

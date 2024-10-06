@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Alert, Spinner, Row, Col, Button, Modal, Image } from 'react-bootstrap';
+import { Card, Alert, Spinner, Row, Col, Button, Modal, Image, Form } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { FaCheckCircle, FaClock, FaTruck, FaTimesCircle, FaUndo } from 'react-icons/fa';
 
@@ -11,6 +11,7 @@ const OrderTracking = () => {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [loadingAction, setLoadingAction] = useState({ type: null, orderId: null });
+    const [paymentStatus, setPaymentStatus] = useState(''); // Trạng thái thanh toán
 
     useEffect(() => {
         const fetchCustomerId = async () => {
@@ -33,7 +34,7 @@ const OrderTracking = () => {
         const fetchOrders = async () => {
             if (!customerId) return;
 
-            setLoading(true); // Start loading before fetch
+            setLoading(true);
             try {
                 const response = await APIs.get(`${endpoints['orders']}?customer_id=${customerId}`);
                 setOrders(response.data);
@@ -41,7 +42,7 @@ const OrderTracking = () => {
                 console.error("Error fetching orders:", error);
                 setErrorMessage("Unable to fetch orders. Please try again.");
             } finally {
-                setLoading(false); // Stop loading after fetch
+                setLoading(false);
             }
         };
 
@@ -51,8 +52,6 @@ const OrderTracking = () => {
     const renderStatusBadge = (status) => {
         switch (status) {
             case 'pending':
-                return <span className="badge bg-warning text-dark"><FaClock /> Chờ xác nhận</span>;
-            case 'pending-2':
                 return <span className="badge bg-warning text-dark"><FaClock /> Chờ xác nhận</span>;
             case 'processing':
                 return <span className="badge bg-info text-white"><FaTruck /> Đang xử lý</span>;
@@ -80,57 +79,27 @@ const OrderTracking = () => {
             }
         } catch (error) {
             console.error("Error cancelling order:", error);
-            if (error.response) {
-                setErrorMessage(error.response.data.error || "Unable to cancel order.");
-            } else {
-                setErrorMessage("An error occurred. Please try again.");
-            }
+            setErrorMessage("Unable to cancel order. Please try again.");
         } finally {
             setLoadingAction({ type: null, orderId: null });
         }
     };
 
-    const handleReturnOrder = async (orderId) => {
-        setLoadingAction({ type: 'return', orderId });
+    const handleUpdatePaymentStatus = async (orderId) => {
+        setLoadingAction({ type: 'updatePayment', orderId });
         try {
-            const response = await APIs.patch(`${endpoints['orders']}${orderId}/return_order/`, {}, {
+            const response = await APIs.patch(`${endpoints['orders']}${orderId}/update_payment_status/`, {
+                status: paymentStatus,
+            }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
             if (response.status === 200) {
-                setOrders(orders.map(order => order.id === orderId ? { ...order, status: 'pending' } : order));
+                setOrders(orders.map(order => order.id === orderId ? { ...order, status: paymentStatus } : order));
+                setPaymentStatus(''); // Reset trạng thái
             }
         } catch (error) {
-            console.error("Error returning order:", error);
-            if (error.response) {
-                setErrorMessage(error.response.data.error || "Unable to return order.");
-            } else {
-                setErrorMessage("An error occurred. Please try again.");
-            }
-        } finally {
-            setLoadingAction({ type: null, orderId: null });
-        }
-    };
-
-    const handleDeleteOrder = async (orderId) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
-            return;
-        }
-
-        setLoadingAction({ type: 'delete', orderId });
-        try {
-            const response = await APIs.delete(`${endpoints['orders']}${orderId}/`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-            });
-            if (response.status === 204) {
-                setOrders(orders.filter(order => order.id !== orderId));
-            }
-        } catch (error) {
-            console.error("Error deleting order:", error);
-            if (error.response) {
-                setErrorMessage(error.response.data.error || "Unable to delete order.");
-            } else {
-                setErrorMessage("An error occurred. Please try again.");
-            }
+            console.error("Error updating payment status:", error);
+            setErrorMessage("Unable to update payment status. Please try again.");
         } finally {
             setLoadingAction({ type: null, orderId: null });
         }
@@ -162,7 +131,7 @@ const OrderTracking = () => {
                     <Card key={order.id} className="shadow-sm mb-3">
                         <Card.Body>
                             <Row>
-                                <Col md={6}>
+                                <Col md={8}>
                                     <Card.Text>
                                         <strong>Mã Đơn Hàng:</strong> {order.id}
                                     </Card.Text>
@@ -173,7 +142,7 @@ const OrderTracking = () => {
                                         <strong>Trạng Thái:</strong> {renderStatusBadge(order.status)}
                                     </Card.Text>
                                 </Col>
-                                <Col md={6} className="text-center">
+                                <Col md={4} className="text-center">
                                     <Button variant="info" className="mx-2" onClick={() => handleShowDetail(order)}>Xem Thêm</Button>
                                     {order.status === 'processing' && (
                                         <Button
@@ -187,19 +156,10 @@ const OrderTracking = () => {
                                     {order.status === 'delivered' && (
                                         <Button
                                             variant="warning"
-                                            onClick={() => handleReturnOrder(order.id)}
-                                            disabled={loadingAction.type === 'return' && loadingAction.orderId === order.id}
+                                            onClick={() => handleUpdatePaymentStatus(order.id)}
+                                            disabled={loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id}
                                         >
-                                            {loadingAction.type === 'return' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Hoàn Trả'}
-                                        </Button>
-                                    )}
-                                    {order.status === 'pending' && (
-                                        <Button
-                                            variant="danger"
-                                            onClick={() => handleDeleteOrder(order.id)}
-                                            disabled={loadingAction.type === 'delete' && loadingAction.orderId === order.id}
-                                        >
-                                            {loadingAction.type === 'delete' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Xóa Đơn Hàng'}
+                                            {loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Cập Nhật Thanh Toán'}
                                         </Button>
                                     )}
                                 </Col>
@@ -234,6 +194,15 @@ const OrderTracking = () => {
                                     <hr />
                                 </div>
                             ))}
+                            <Form.Group controlId="paymentStatus">
+                                <Form.Label>Cập Nhật Trạng Thái Thanh Toán</Form.Label>
+                                <Form.Control as="select" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)}>
+                                    <option value="">Chọn trạng thái</option>
+                                    <option value="paid">Đã thanh toán</option>
+                                    <option value="not-paid">Chưa thanh toán</option>
+                                </Form.Control>
+                                <Button variant="primary" onClick={() => handleUpdatePaymentStatus(selectedOrder.id)}>Cập Nhật</Button>
+                            </Form.Group>
                         </div>
                     )}
                 </Modal.Body>

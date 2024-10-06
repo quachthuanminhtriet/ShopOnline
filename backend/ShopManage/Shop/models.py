@@ -22,7 +22,6 @@ class User(AbstractUser):
     ROLE_CHOICES = {
         ('admin', 'Quản Trị Viên'),
         ('customer', 'Khách Hàng'),
-        # ('staff', 'Nhân Viên'),
     }
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='customer')
@@ -35,17 +34,16 @@ class User(AbstractUser):
 
 
 class Customer(BaseModel):
-    full_name = models.CharField(max_length=50, null=False)
+    number_phone = models.CharField(null=True, blank=True, max_length=12)
     birthday = models.DateField(null=False)
     address = models.CharField(max_length=100, null=False)
-    email = models.EmailField(max_length=255, null=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, limit_choices_to='customer')
 
     class Meta:
         verbose_name_plural = 'Khách Hàng'
 
     def __str__(self):
-        return self.full_name
+        return f"{self.user.last_name} + ' ' + {self.user.first_name}"
 
 
 class Category(BaseModel):
@@ -87,6 +85,7 @@ class Product(BaseModel):
 
 
 class ImageProduct(BaseModel):
+    name = models.CharField(max_length=255)
     image = CloudinaryField(null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False, related_name='images')
 
@@ -94,7 +93,7 @@ class ImageProduct(BaseModel):
         verbose_name_plural = 'Hình Ảnh Sản Phẩm'
 
     def __str__(self):
-        return f"{self.product.code} - {self.image}"
+        return f"{self.product.code} - {self.name}"
 
 
 class Review(BaseModel):
@@ -121,6 +120,10 @@ class Order(BaseModel):
                                        ('delivered', 'Đã Nhận'),
                                        ('cancelled', 'Đã Hủy'),
                                        ('returned', 'Hoàn Trả')])
+    status_payment = models.CharField(max_length=50, null=False, choices=[('not-yet', 'Chưa thanh toán'),
+                                                                          ('waiting', 'Chờ Thanh Toán'),
+                                                                          ('paid', 'Đã thanh toán')])
+
     class Meta:
         verbose_name_plural = 'Đơn Hàng'
 
@@ -141,24 +144,12 @@ class OrderItem(BaseModel):
         return f"{self.order_id.id} - {self.product_id} - {self.quantity} - {self.selected_image}"
 
 
-# class Voucher(BaseModel):
-#     code = models.CharField(max_length=50, unique=True)
-#     valid_from = models.DateTimeField()
-#     valid_to = models.DateTimeField()
-#     discount_percentage = models.IntegerField(default=0)
-#     active = models.BooleanField(default=True)
-#
-#     class Meta:
-#         verbose_name_plural = 'Phiếu giảm giá'
-#
-#     def __str__(self):
-#         return self.code
-
 class ImageBanner(BaseModel):
+    name = models.CharField(max_length=255)
     image = CloudinaryField(null=True)
 
     class Meta:
         verbose_name_plural = 'Hình ảnh minh hoạ'
 
     def __str__(self):
-        return f"{self.image}"
+        return f"{self.name}"

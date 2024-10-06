@@ -4,7 +4,8 @@ const HOST = 'http://127.0.0.1:8000';
 
 export const endpoints = {
     'login': '/o/token/',
-    'register': '/register/',
+    'update': '/users/',
+    'register': '/users/',
     'current-user': '/users/current-user/',
     'banners': 'banners',
     'categories': '/categories/',

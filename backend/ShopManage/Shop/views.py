@@ -1,4 +1,5 @@
-from rest_framework import viewsets, generics, parsers, permissions
+from django.contrib.auth.hashers import make_password
+from rest_framework import viewsets, generics, parsers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers, paginators
@@ -7,12 +8,48 @@ from .models import User, Customer, Category, Product, ImageProduct, Review, Ord
     ImageBanner, OrderItem
 
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.UpdateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save(password=make_password(serializer.validated_data['password']))
+            customer = Customer(
+                user=user,
+                number_phone=request.data.get('number_phone'),
+                birthday=request.data.get('birthday'),
+                address=request.data.get('address')
+            )
+            customer.save()
+            return Response(serializers.UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        user = self.get_object()
+        user_serializer = self.get_serializer(user, data=request.data, partial=True)
+        if user_serializer.is_valid():
+            user = user_serializer.save()
+            if hasattr(user, 'customer'):
+                customer = user.customer  # Access the related Customer
+                customer.number_phone = request.data.get('number_phone', customer.number_phone)
+                customer.birthday = request.data.get('birthday', customer.birthday)
+                customer.address = request.data.get('address', customer.address)
+                customer.save()
+
+            return Response(serializers.UserSerializer(user).data)
+
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_object(self):
+        try:
+            return User.objects.get(pk=self.kwargs['pk'], is_active=True)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
     def get_permissions(self):
-        if self.action in ['get_current_user']:
+        if self.action in ['get_current_user', 'update_user']:
             return [permissions.IsAuthenticated()]
 
         return [permissions.AllowAny()]
@@ -33,8 +70,6 @@ class CustomerViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPI
     queryset = Customer.objects.filter(active=True)
     serializer_class = serializers.CustomerSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
@@ -95,7 +130,6 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
                    generics.DestroyAPIView):
     queryset = Order.objects.filter(active=True)
     serializer_class = serializers.OrderSerializer
-
     # permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -109,6 +143,45 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
                 queryset = queryset.filter(status=status)
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        order_items_data = request.data.get('items', [])
+        total_price = 0
+
+        # Kiểm tra số lượng hàng tồn kho cho từng sản phẩm
+        for item_data in order_items_data:
+            product_id = item_data.get('product_id')
+            quantity = item_data.get('quantity')
+
+            product = Product.objects.get(id=product_id)
+
+            if product.stock < quantity:
+                return Response({"error": f"Sản phẩm {product.name} không đủ hàng trong kho."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            total_price += product.price * quantity
+
+        # Tạo đơn hàng
+        order = Order.objects.create(
+            customer_id=request.user,
+            total_price=total_price,
+            status='pending',
+            status_payment='not-yet'
+        )
+
+        # Tạo OrderItem và cập nhật số lượng hàng tồn kho
+        for item_data in order_items_data:
+            product_id = item_data.get('product_id')
+            quantity = item_data.get('quantity')
+            product = Product.objects.get(id=product_id)
+
+            OrderItem.objects.create(order_id=order, product_id=product, quantity=quantity)
+
+            # Cập nhật số lượng hàng tồn kho
+            product.stock -= quantity
+            product.save()
+
+        return Response(serializers.OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['patch'], detail=True)
     def cancel_order(self, request, pk=None):

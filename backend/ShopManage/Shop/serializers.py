@@ -4,7 +4,14 @@ from .models import User, Customer, Category, Product, ImageProduct, Review, Ord
     ImageBanner
 
 
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer()
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -23,12 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
                 'write_only': True
             }
         }
-
-
-class CustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):

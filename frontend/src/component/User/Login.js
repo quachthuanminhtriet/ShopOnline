@@ -17,7 +17,7 @@ const Login = () => {
         setError(null);
 
         if (!username || !password) {
-            setError("Please fill in all fields.");
+            setError("Vui lòng điền đầy đủ thông tin.");
             return;
         }
 
@@ -28,8 +28,8 @@ const Login = () => {
                 grant_type: 'password',
                 username: username,
                 password: password,
-                client_id: 'FrRTkud27VWmb8s9sdXTVXEkGTBsjpOZ3kub2W8s',
-                client_secret: 'EuKeZhCYX7xdQuEYV60PSFo5Uel00ZMdCWNqcEH22V6ELZv5cZpmfzZzx80kbOrr8rD4YXdVbW1sc9n2mzJV6cUZe0Gc9WJE26PCNRrrDg9VT16AJTKJMBieAlI6Vwc3',
+                client_id: 'gU98nHMglqfJcMYp6DTD7jod0wtkeY5chLDFKDMe',
+                client_secret: 'hJZlB3HSVBG8tw84OZYApGEBvwCjbt8QqgQoRAPIVqoboL4gyIjKca4ocv1RqqAsSkgCPYQoIrP19cHkmv7wwbKVYQn39Dbk0T15k7Oqb3AujcobCCWD30pYwAGshqPi',
             }, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -39,8 +39,9 @@ const Login = () => {
             const { access_token } = response.data;
             localStorage.setItem('access_token', access_token);
             navigate('/');
+            window.location.reload();            
         } catch (err) {
-            setError("Login failed! Please check your credentials.");
+            setError("Đăng nhập không thành công! Vui lòng kiểm tra lại thông tin.");
             console.error("Login error:", err.response ? err.response.data : err);
         } finally {
             setIsLoading(false);
@@ -53,12 +54,12 @@ const Login = () => {
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleLogin} className="shadow p-4 rounded">
                 <Form.Group controlId="formBasicEmail">
-                    <Form.Label>Username</Form.Label>
+                    <Form.Label>Tên đăng nhập</Form.Label>
                     <div className="input-group">
                         <span className="input-group-text"><FaUser /></span>
                         <Form.Control
                             type="text"
-                            placeholder="Enter username"
+                            placeholder="Nhập tên đăng nhập"
                             value={username}
                             onChange={(e) => setUserName(e.target.value)}
                             required
@@ -67,12 +68,12 @@ const Login = () => {
                 </Form.Group>
 
                 <Form.Group controlId="formBasicPassword" className="mt-3">
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label>Mật khẩu</Form.Label>
                     <div className="input-group">
                         <span className="input-group-text"><FaLock /></span>
                         <Form.Control
                             type="password"
-                            placeholder="Password"
+                            placeholder="Mật khẩu"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -82,11 +83,11 @@ const Login = () => {
 
                 <div className='text-center mt-4'>
                     <Button variant="primary" type="submit" disabled={isLoading}>
-                        {isLoading ? 'Loading...' : 'Login'}
+                        {isLoading ? 'Đang tải...' : 'Đăng nhập'}
                     </Button>
 
                     <Link to='/register' className='btn btn-secondary mx-2'>
-                        Register
+                        Đăng ký
                     </Link>
                 </div>
             </Form>
@@ -94,4 +95,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Login;   
