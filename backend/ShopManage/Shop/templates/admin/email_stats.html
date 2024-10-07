@@ -1,0 +1,25 @@
+<!-- templates/admin/email_stats.html -->
+
+<h1>Thống Kê Bán Hàng Năm {{ year }}</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Tháng</th>
+            <th>Tổng Đơn Hàng</th>
+            <th>Tổng Doanh Thu</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in stats %}
+            <tr>
+                <td>{{ stat.create_date__month }}</td>
+                <td>{{ stat.total_orders }}</td>
+                <td>{{ stat.total_revenue }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Không có dữ liệu cho năm này.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

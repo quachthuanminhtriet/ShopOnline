@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Alert, Spinner, Row, Col, Button, Modal, Image, Form } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { FaCheckCircle, FaClock, FaTruck, FaTimesCircle, FaUndo } from 'react-icons/fa';
+import { MdDoNotDisturbAlt, MdOutlinePaid } from 'react-icons/md';
 
 const OrderTracking = () => {
     const [orders, setOrders] = useState([]);
@@ -53,6 +54,8 @@ const OrderTracking = () => {
         switch (status) {
             case 'pending':
                 return <span className="badge bg-warning text-dark"><FaClock /> Chờ xác nhận</span>;
+            case 'pending-2':
+                return <span className="badge bg-warning text-dark"><FaClock /> Chờ xác nhận</span>;
             case 'processing':
                 return <span className="badge bg-info text-white"><FaTruck /> Đang xử lý</span>;
             case 'shipping':
@@ -63,6 +66,19 @@ const OrderTracking = () => {
                 return <span className="badge bg-secondary text-white"><FaUndo /> Đã hoàn trả</span>;
             case 'cancelled':
                 return <span className="badge bg-danger text-white"><FaTimesCircle /> Đã hủy</span>;
+            default:
+                return null;
+        }
+    };
+
+    const renderStatusPaymentBadge = (status_payment) => {
+        switch (status_payment) {
+            case 'not-yet':
+                return <span className="badge bg-warning text-dark"><MdDoNotDisturbAlt /> Chờ xác nhận</span>;
+            case 'waiting':
+                return <span className="badge bg-warning text-dark"><FaClock /> Chờ thanh toán</span>;
+            case 'paid':
+                return <span className="badge bg-secondary text-white"><MdOutlinePaid /> Đã thanh toán</span>;
             default:
                 return null;
         }
@@ -88,15 +104,16 @@ const OrderTracking = () => {
     const handleUpdatePaymentStatus = async (orderId) => {
         setLoadingAction({ type: 'updatePayment', orderId });
         try {
-            const response = await APIs.patch(`${endpoints['orders']}${orderId}/update_payment_status/`, {
+            const response = await APIs.patch(`${endpoints['orders']}${orderId}/update-payment-status/`, {
                 status: paymentStatus,
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
             if (response.status === 200) {
                 setOrders(orders.map(order => order.id === orderId ? { ...order, status: paymentStatus } : order));
-                setPaymentStatus(''); // Reset trạng thái
+                setPaymentStatus('');
             }
+            window.location.reload();
         } catch (error) {
             console.error("Error updating payment status:", error);
             setErrorMessage("Unable to update payment status. Please try again.");
@@ -104,6 +121,8 @@ const OrderTracking = () => {
             setLoadingAction({ type: null, orderId: null });
         }
     };
+
+    
 
     const handleShowDetail = (order) => {
         setSelectedOrder(order);
@@ -140,6 +159,9 @@ const OrderTracking = () => {
                                     </Card.Text>
                                     <Card.Text>
                                         <strong>Trạng Thái:</strong> {renderStatusBadge(order.status)}
+                                    </Card.Text>
+                                    <Card.Text>
+                                        <strong>Trạng Thái Thanh Toán:</strong> {renderStatusPaymentBadge(order.status_payment)}
                                     </Card.Text>
                                 </Col>
                                 <Col md={4} className="text-center">
@@ -199,9 +221,9 @@ const OrderTracking = () => {
                                 <Form.Control as="select" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)}>
                                     <option value="">Chọn trạng thái</option>
                                     <option value="paid">Đã thanh toán</option>
-                                    <option value="not-paid">Chưa thanh toán</option>
+                                    <option value="waiting">Chưa thanh toán</option>
                                 </Form.Control>
-                                <Button variant="primary" onClick={() => handleUpdatePaymentStatus(selectedOrder.id)}>Cập Nhật</Button>
+                                <Button variant="primary" className='mt-2' onClick={() => handleUpdatePaymentStatus(selectedOrder.id)}>Cập Nhật</Button>
                             </Form.Group>
                         </div>
                     )}

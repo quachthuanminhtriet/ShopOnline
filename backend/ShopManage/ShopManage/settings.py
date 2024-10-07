@@ -76,11 +76,12 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
+import os
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -110,6 +111,7 @@ DATABASES = {
 }
 
 import pymysql
+
 
 pymysql.install_as_MySQLdb()
 
@@ -174,3 +176,4 @@ EMAIL_HOST_PASSWORD = 'wkqd xqmn xsrp zlgo'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+

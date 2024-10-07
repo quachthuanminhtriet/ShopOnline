@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Row, Col, Alert, Spinner, Form } from 'react-bootstrap';
-import { QRCodeCanvas } from 'qrcode.react'; // Sử dụng QRCodeCanvas
 import APIs, { endpoints } from '../../configs/APIs';
+import MoMoQrCode from './MoMoQrCode';
 
 const Cart = ({ cart, setCart }) => {
     const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -11,6 +11,8 @@ const Cart = ({ cart, setCart }) => {
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [qrLoading, setQrLoading] = useState(false);
+    const [orderIdQr, setOrderIdQr] = useState(null);
+    const [totalPriceQr, setTotalPriceQr] = useState(0);
 
     const updateQuantity = (productId, newQuantity) => {
         if (newQuantity < 1) return;
@@ -37,10 +39,15 @@ const Cart = ({ cart, setCart }) => {
                 customer_id: customerId,
                 total_price: totalPrice,
                 status: paymentMethod === 'online' ? 'pending' : 'pending-2',
-                status_payment: paymentMethod === 'online' ? 'not-yet' : 'paid'
+                status_payment: paymentMethod === 'online' ? 'watting' : 'not-yet'
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
+
+            if (paymentMethod === 'online') {
+                setOrderIdQr(orderResponse.data.id);
+                setTotalPriceQr(orderResponse.data.total_price);
+            }
 
             const orderId = orderResponse.data.id;
 
@@ -70,15 +77,13 @@ const Cart = ({ cart, setCart }) => {
         }
     };
 
-    const generateQrCode = async (orderId) => {
+    const generateQrCode = (orderId) => {
         setQrLoading(true);
         setErrorMessage('');
         try {
-            const qrResponse = await APIs.post(endpoints['generate-qr'], {
-                amount: totalPrice,
-                order_id: orderId,
-            });
-            setQrCodeUrl(qrResponse.data.qr_url);
+            const qrValue = `momo://payment?amount=${totalPrice}&orderId=${orderId}&description=Thanh toán cho đơn hàng ${orderId}`;
+            setQrCodeUrl(qrValue);
+            console.log("QR Code Value:", qrValue);
         } catch (error) {
             console.error("Lỗi khi tạo mã QR:", error);
             setErrorMessage("Không thể tạo mã QR. Vui lòng thử lại.");
@@ -139,40 +144,35 @@ const Cart = ({ cart, setCart }) => {
                             <h4 className="fw-bold">Tổng Giá: {totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h4>
                             <Form.Group className="mt-3">
                                 <Form.Label>Chọn Phương Thức Thanh Toán</Form.Label>
-                                <Form.Check 
-                                    type="radio" 
-                                    label="Thanh toán khi nhận hàng" 
-                                    name="paymentMethod" 
-                                    value="cod" 
-                                    checked={paymentMethod === 'cod'} 
-                                    onChange={() => setPaymentMethod('cod')} 
+                                <Form.Check
+                                    type="radio"
+                                    label="Thanh toán khi nhận hàng"
+                                    name="paymentMethod"
+                                    value="cod"
+                                    checked={paymentMethod === 'cod'}
+                                    onChange={() => setPaymentMethod('cod')}
                                 />
-                                <Form.Check 
-                                    type="radio" 
-                                    label="Thanh toán online" 
-                                    name="paymentMethod" 
-                                    value="online" 
-                                    checked={paymentMethod === 'online'} 
-                                    onChange={() => setPaymentMethod('online')} 
+                                <Form.Check
+                                    type="radio"
+                                    label="Thanh toán online"
+                                    name="paymentMethod"
+                                    value="online"
+                                    checked={paymentMethod === 'online'}
+                                    onChange={() => setPaymentMethod('online')}
                                 />
                             </Form.Group>
                             <Button variant="success" size="lg" onClick={checkout} disabled={!isLoggedIn || loading}>
                                 {loading ? <Spinner animation="border" size="sm" /> : "Thanh Toán"}
                             </Button>
                         </div>
-                        {qrCodeUrl && ( // Hiển thị mã QR nếu có
-                            <div className="text-center mt-4">
-                                <h5>Mã QR Thanh Toán:</h5>
-                                <QRCodeCanvas value={qrCodeUrl} size={256} />
-                                <p>Quét mã QR để thanh toán</p>
-                                <Button variant="primary" onClick={() => generateQrCode() } disabled={qrLoading}>
-                                    {qrLoading ? 'Đang tạo lại mã QR...' : 'Tạo lại mã QR'}
-                                </Button>
-                            </div>
-                        )}
                     </Card.Body>
                 </Card>
             )}
+            <div>
+                {paymentMethod === 'online' && orderIdQr && (
+                    <MoMoQrCode amount={totalPriceQr} orderIdQr={orderIdQr} />
+                )}
+            </div>
         </div>
     );
 };

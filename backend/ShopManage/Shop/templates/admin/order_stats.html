@@ -1,0 +1,89 @@
+<!-- templates/admin/order_stats.html -->
+
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+  <h1>Thống Kê Bán Hàng Năm {{ year }}</h1>
+
+  <form method="get" style="margin-bottom: 20px;">
+    <label for="year">Chọn Năm:</label>
+    <input type="number" name="year" id="year" value="{{ year }}" min="2000" max="{{ current_year }}">
+    <button type="submit">Xem</button>
+  </form>
+
+  <!-- Button to send email -->
+  <form action="{% url 'admin:send_email' %}" method="get" style="margin-bottom: 20px;">
+    <input type="hidden" name="year" value="{{ year }}">
+    <button type="submit">Gửi Email Thống Kê</button>
+  </form>
+
+  <!-- Sales Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Tháng</th>
+        <th>Tổng Đơn Hàng</th>
+        <th>Tổng Doanh Thu</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stat in stats %}
+        <tr>
+          <td>{{ stat.create_date__month }}</td>
+          <td>{{ stat.total_orders }}</td>
+          <td>{{ stat.total_revenue }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">Không có dữ liệu cho năm này.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Chart.js -->
+  <canvas id="orderChart" width="400" height="200"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('orderChart').getContext('2d');
+    const orderChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [{% for stat in stats %} "{{ stat.create_date__month }}", {% endfor %}],
+        datasets: [{
+          label: 'Tổng Đơn Hàng',
+          data: [{% for stat in stats %} {{ stat.total_orders }}, {% endfor %}],
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }, {
+          label: 'Tổng Doanh Thu',
+          data: [{% for stat in stats %} {{ stat.total_revenue }}, {% endfor %}],
+          backgroundColor: 'rgba(153, 102, 255, 0.2)',
+          borderColor: 'rgba(153, 102, 255, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Số Lượng / Doanh Thu'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Tháng'
+            }
+          }
+        }
+      }
+    });
+  </script>
+{% endblock %}
