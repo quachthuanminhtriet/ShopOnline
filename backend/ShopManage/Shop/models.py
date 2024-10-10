@@ -97,8 +97,8 @@ class ImageProduct(BaseModel):
 
 
 class Review(BaseModel):
-    product_id = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='reviews')
+    product_id = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')
     content = models.TextField()
     rating = models.IntegerField(default=5, validators=[MaxValueValidator(5), MinValueValidator(1)])
 
@@ -106,7 +106,7 @@ class Review(BaseModel):
         verbose_name_plural = 'Đánh giá sản phẩm'
 
     def __str__(self):
-        return f"{self.product_id.code} - {self.customer_id.user.username} - {self.content}"
+        return f"{self.product_id.code} - {self.user.first_name} - {self.content}"
 
 
 class Order(BaseModel):

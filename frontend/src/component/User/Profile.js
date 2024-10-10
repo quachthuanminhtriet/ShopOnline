@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Form, Button, Alert, Spinner, Image, Card } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { useNavigate } from 'react-router-dom';
+import './Profile.css';  // Đảm bảo bạn thêm CSS vào file này
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -106,32 +107,43 @@ const Profile = () => {
 
     return (
         <Container className="mt-5">
-            <Card>
+            <Card className="shadow-sm">
                 <Card.Body>
-                    <h2 className="text-center">Hồ Sơ</h2>
+                    <h2 className="text-center mb-4">Hồ Sơ</h2>
                     {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit} className="profile-form">
+                        {/* Avatar */}
                         <Form.Group controlId="formAvatar" className='text-center mb-4'>
-                            <Image 
-                                src={avatarPreview || formData.avatar || '/default-avatar.png'} 
-                                roundedCircle 
-                                style={{ width: '150px', height: '150px' }} 
-                            />
-                            {isEditing && (
-                                <Form.Control
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className='mt-2'
+                            <div className="avatar-container">
+                                <Image 
+                                    src={avatarPreview || formData.avatar || '/default-avatar.png'} 
+                                    roundedCircle 
+                                    style={{ width: '150px', height: '150px' }} 
+                                    className="avatar-img"
                                 />
-                            )}
+                                {isEditing && (
+                                    <div className="edit-icon">
+                                        <Button variant="link" className="edit-avatar-btn" onClick={() => document.getElementById('avatarInput').click()}>
+                                            <i className="fas fa-pencil-alt"></i> Sửa ảnh
+                                        </Button>
+                                        <Form.Control
+                                            id="avatarInput"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </Form.Group>
 
-                        <Form.Group controlId="formFullName">
+                        {/* Full Name */}
+                        <Form.Group controlId="formFullName" className="mb-3">
                             <Form.Label>Họ và Tên</Form.Label>
                             {isEditing ? (
-                                <>
+                                <div className="d-flex">
                                     <Form.Control
                                         type="text"
                                         name="first_name"
@@ -139,7 +151,7 @@ const Profile = () => {
                                         onChange={handleChange}
                                         required
                                         placeholder="Họ"
-                                        className='mb-2'
+                                        className="me-2"
                                     />
                                     <Form.Control
                                         type="text"
@@ -149,13 +161,14 @@ const Profile = () => {
                                         required
                                         placeholder="Tên"
                                     />
-                                </>
+                                </div>
                             ) : (
                                 <div>{`${formData.first_name} ${formData.last_name}`}</div>
                             )}
                         </Form.Group>
 
-                        <Form.Group controlId="formBirthday">
+                        {/* Birthday */}
+                        <Form.Group controlId="formBirthday" className="mb-3">
                             <Form.Label>Ngày sinh</Form.Label>
                             {isEditing ? (
                                 <Form.Control
@@ -170,7 +183,8 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        <Form.Group controlId="formAddress">
+                        {/* Address */}
+                        <Form.Group controlId="formAddress" className="mb-3">
                             <Form.Label>Địa chỉ</Form.Label>
                             {isEditing ? (
                                 <Form.Control
@@ -185,7 +199,8 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        <Form.Group controlId="formEmail">
+                        {/* Email */}
+                        <Form.Group controlId="formEmail" className="mb-3">
                             <Form.Label>Email</Form.Label>
                             {isEditing ? (
                                 <Form.Control
@@ -200,6 +215,7 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
+                        {/* Buttons */}
                         <div className="text-center mt-4">
                             {isEditing ? (
                                 <>
@@ -207,13 +223,13 @@ const Profile = () => {
                                         variant="primary"
                                         type="submit"
                                         disabled={loadingUpdate}
-                                        className='me-2'
+                                        className="me-2"
                                     >
                                         {loadingUpdate ? <Spinner animation="border" size="sm" /> : "Cập nhật hồ sơ"}
                                     </Button>
                                     <Button
                                         variant="secondary"
-                                        onClick={() => setIsEditing(false)} // Thoát chế độ sửa
+                                        onClick={() => setIsEditing(false)}
                                     >
                                         Hủy
                                     </Button>

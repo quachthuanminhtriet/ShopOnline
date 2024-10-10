@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Alert, Spinner, Row, Col, Button, Modal, Image, Form } from 'react-bootstrap';
+import { Card, Alert, Spinner, Row, Col, Button, Modal, Image } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { FaCheckCircle, FaClock, FaTruck, FaTimesCircle, FaUndo } from 'react-icons/fa';
 import { MdDoNotDisturbAlt, MdOutlinePaid } from 'react-icons/md';
@@ -12,7 +12,6 @@ const OrderTracking = () => {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [loadingAction, setLoadingAction] = useState({ type: null, orderId: null });
-    const [paymentStatus, setPaymentStatus] = useState(''); // Trạng thái thanh toán
 
     useEffect(() => {
         const fetchCustomerId = async () => {
@@ -23,7 +22,7 @@ const OrderTracking = () => {
                 setCustomerId(userResponse.data.id);
             } catch (error) {
                 console.error("Error fetching user info:", error);
-                setErrorMessage("Unable to fetch user information.");
+                setErrorMessage("Vui lòng đăng nhập hoặc kiểm tra lại thông tin trước khi sử dụng chức năng này!");
                 setLoading(false);
             }
         };
@@ -94,26 +93,24 @@ const OrderTracking = () => {
                 setOrders(orders.map(order => order.id === orderId ? { ...order, status: 'pending' } : order));
             }
         } catch (error) {
-            console.error("Error cancelling order:", error);
+            console.error("Lỗi huỷ đơn hàng.", error);
             setErrorMessage("Unable to cancel order. Please try again.");
         } finally {
             setLoadingAction({ type: null, orderId: null });
         }
     };
 
-    const handleUpdatePaymentStatus = async (orderId) => {
+    const handleOnlinePayment = async (orderId) => {
         setLoadingAction({ type: 'updatePayment', orderId });
         try {
             const response = await APIs.patch(`${endpoints['orders']}${orderId}/update-payment-status/`, {
-                status: paymentStatus,
+                status: 'waiting',
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
             if (response.status === 200) {
-                setOrders(orders.map(order => order.id === orderId ? { ...order, status: paymentStatus } : order));
-                setPaymentStatus('');
+                setOrders(orders.map(order => order.id === orderId ? { ...order, status_payment: 'waiting' } : order));
             }
-            window.location.reload();
         } catch (error) {
             console.error("Error updating payment status:", error);
             setErrorMessage("Unable to update payment status. Please try again.");
@@ -121,8 +118,6 @@ const OrderTracking = () => {
             setLoadingAction({ type: null, orderId: null });
         }
     };
-
-    
 
     const handleShowDetail = (order) => {
         setSelectedOrder(order);
@@ -139,7 +134,7 @@ const OrderTracking = () => {
     }
 
     if (errorMessage) {
-        return <Alert variant="danger">{errorMessage}</Alert>;
+        return <Alert variant="danger" className='mt-2'>{errorMessage}</Alert>;
     }
 
     return (
@@ -175,13 +170,13 @@ const OrderTracking = () => {
                                             {loadingAction.type === 'cancel' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Hủy Đơn Hàng'}
                                         </Button>
                                     )}
-                                    {order.status === 'delivered' && (
+                                    {order.status_payment === 'not-yet' && (
                                         <Button
-                                            variant="warning"
-                                            onClick={() => handleUpdatePaymentStatus(order.id)}
+                                            variant="success"
+                                            onClick={() => handleOnlinePayment(order.id)}
                                             disabled={loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id}
                                         >
-                                            {loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Cập Nhật Thanh Toán'}
+                                            {loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Thanh Toán Online'}
                                         </Button>
                                     )}
                                 </Col>
@@ -213,18 +208,8 @@ const OrderTracking = () => {
                                     Số lượng: {item.quantity}
                                     <br />
                                     Giá: {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                                    <hr />
                                 </div>
                             ))}
-                            <Form.Group controlId="paymentStatus">
-                                <Form.Label>Cập Nhật Trạng Thái Thanh Toán</Form.Label>
-                                <Form.Control as="select" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)}>
-                                    <option value="">Chọn trạng thái</option>
-                                    <option value="paid">Đã thanh toán</option>
-                                    <option value="waiting">Chưa thanh toán</option>
-                                </Form.Control>
-                                <Button variant="primary" className='mt-2' onClick={() => handleUpdatePaymentStatus(selectedOrder.id)}>Cập Nhật</Button>
-                            </Form.Group>
                         </div>
                     )}
                 </Modal.Body>

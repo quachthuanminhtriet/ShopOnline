@@ -39,10 +39,11 @@ const Cart = ({ cart, setCart }) => {
                 customer_id: customerId,
                 total_price: totalPrice,
                 status: paymentMethod === 'online' ? 'pending' : 'pending-2',
-                status_payment: paymentMethod === 'online' ? 'watting' : 'not-yet'
+                status_payment: paymentMethod === 'online' ? 'waiting' : 'not-yet'
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
             });
+            console.log("Order Response:", orderResponse);
 
             if (paymentMethod === 'online') {
                 setOrderIdQr(orderResponse.data.id);
@@ -50,8 +51,10 @@ const Cart = ({ cart, setCart }) => {
             }
 
             const orderId = orderResponse.data.id;
+            console.log("Order ID:", orderId);
 
             const orderItemsPromises = cart.map(item => {
+                console.log(`Adding item ${item.productId} to order ${orderId}`);
                 return APIs.post(endpoints['order-items'], {
                     order_id: orderId,
                     product_id: item.productId,

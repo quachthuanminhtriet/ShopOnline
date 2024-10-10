@@ -11,7 +11,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer()
+    customer = CustomerSerializer(required=False)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -68,9 +68,15 @@ class ImageProductSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user_avatar = serializers.SerializerMethodField()
+    user_first_name = serializers.CharField(source='user.first_name', read_only=True)
+
     class Meta:
         model = Review
         fields = '__all__'
+
+    def get_user_avatar(self, obj):
+        return obj.user.avatar.url if obj.user.avatar else None
 
 
 class OrderSerializer(serializers.ModelSerializer):

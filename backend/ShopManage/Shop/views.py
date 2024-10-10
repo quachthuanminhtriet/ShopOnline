@@ -1,15 +1,9 @@
-import uuid
-import hmac
-import hashlib
-import json
-
 from django.contrib.auth.hashers import make_password
-from django.contrib.sites import requests
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from . import serializers
-from .email import send_notification_to_staff, send_notification_to_user
+from .email import send_notification_to_staff, send_notification_to_user, send_payment_waiting_to_staff
 from .models import User, Customer, Category, Product, ImageProduct, Review, Order, Brand, \
     ImageBanner, OrderItem
 
@@ -36,6 +30,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
         return Response(serializers.UserSerializer(user).data)
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save(password=make_password(serializer.validated_data['password']))
@@ -73,7 +68,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
 class CustomerViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView):
     queryset = Customer.objects.filter(active=True)
     serializer_class = serializers.CustomerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
@@ -127,7 +122,17 @@ class ImageProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Creat
 class ReviewViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):
     queryset = Review.objects.filter(active=True)
     serializer_class = serializers.ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action.__eq__('list'):
+            product_id = self.request.query_params.get('product_id')
+            if product_id:
+                queryset = queryset.filter(product_id=product_id)
+
+        return queryset
 
 
 class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView,
@@ -186,6 +191,27 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
                                       order.id)
             return Response({"status": "Order has been confirmed for return. Notification sent to staff and user."})
         return Response({"error": "Cannot confirm return for this order."}, status=400)
+
+    @action(methods=['patch'], detail=True, url_path='update-payment-status')
+    def update_payment_status(self, request, pk=None):
+        order = self.get_object()
+        new_status = request.data.get('status')
+
+        if new_status == 'waiting':  # Chỉ xử lý khi trạng thái là 'waiting'
+            order.status_payment = 'waiting'
+            order.save()
+
+            # Gửi thông báo email tới nhân viên
+            customer_email = order.customer_id.email
+            send_payment_waiting_to_staff(order.id, customer_email)
+
+        return Response({"status": "Payment status updated to waiting."})
+
+    def perform_create(self, serializer):
+        order = serializer.save()
+        if order.status_payment == 'waiting':
+            customer_email = order.customer_id.email
+            send_payment_waiting_to_staff(order.id, customer_email)
 
 
 class OrderItemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView):

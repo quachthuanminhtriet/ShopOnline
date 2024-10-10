@@ -8,7 +8,7 @@ from django.urls import path
 from . import utils
 
 from .models import User, Customer, Category, Product, ImageProduct, Order, Brand, ImageBanner, \
-    OrderItem
+    OrderItem, Review
 
 
 class RevenueReportForm(forms.Form):
@@ -77,3 +77,4 @@ admin_site.register(Order)
 admin_site.register(OrderItem)
 admin_site.register(Brand)
 admin_site.register(ImageBanner)
+admin_site.register(Review)
