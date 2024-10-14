@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Row, Col, Alert, Spinner, Form } from 'react-bootstrap';
+import { Card, Button, Row, Col, Alert, Spinner, Form, Image } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import MoMoQrCode from './MoMoQrCode';
 
@@ -115,39 +115,42 @@ const Cart = ({ cart, setCart }) => {
             {cart.length === 0 ? (
                 <Alert variant="info" className="text-center">Giỏ hàng của bạn đang trống.</Alert>
             ) : (
-                <Card className="shadow-sm">
-                    <Card.Body>
-                        <Row>
-                            {cart.map(item => (
-                                <Col key={item.productId} md={4} className="mb-3">
-                                    <Card className="h-100 text-center">
-                                        <Card.Img src={item.selectedImage} alt={item.name} className="w-50 mx-auto mt-2" />
-                                        <Card.Body>
-                                            <Card.Title>{item.name}</Card.Title>
-                                            <Card.Text>
-                                                <strong>Giá:</strong> {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                                            </Card.Text>
-                                            <Card.Text>
-                                                <strong>Số Lượng:</strong>
-                                                <input
-                                                    type="number"
-                                                    value={item.quantity}
-                                                    min="1"
-                                                    className="form-control d-inline-block w-50 mt-2"
-                                                    onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value))}
-                                                />
-                                            </Card.Text>
-                                            <Button variant="danger" onClick={() => removeFromCart(item.productId)}>Xóa</Button>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            ))}
-                        </Row>
-                        <div className="text-center mt-4">
-                            <h4 className="fw-bold">Tổng Giá: {totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h4>
-                            <Form.Group className="mt-3">
-                                <Form.Label>Chọn Phương Thức Thanh Toán</Form.Label>
+                <Card className="shadow-sm p-4">
+                    <Row className="mb-3">
+                        {cart.map(item => (
+                            <Col key={item.productId} md={4} className="mb-4">
+                                <Card className="h-100 text-center shadow-sm">
+                                    <Card.Body>
+                                        <Image src={item.selectedImage} alt={item.name} className="w-75 mb-3 rounded" />
+                                        <Card.Title className="fs-5">{item.name}</Card.Title>
+                                        <Card.Text>
+                                            <strong>Giá:</strong> {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                        </Card.Text>
+                                        <div className="d-flex justify-content-center align-items-center">
+                                            <Form.Control
+                                                type="number"
+                                                value={item.quantity}
+                                                min="1"
+                                                className="w-50"
+                                                onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value))}
+                                            />
+                                        </div>
+                                        <Button variant="outline-danger" className="mt-2" onClick={() => removeFromCart(item.productId)}>
+                                            Xóa
+                                        </Button>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+
+                    <div className="text-center mt-4">
+                        <h4 className="fw-bold">Tổng Giá: {totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h4>
+                        <Form.Group className="mt-3">
+                            <Form.Label><strong>Phương Thức Thanh Toán</strong></Form.Label>
+                            <div className="d-flex justify-content-center">
                                 <Form.Check
+                                    inline
                                     type="radio"
                                     label="Thanh toán khi nhận hàng"
                                     name="paymentMethod"
@@ -156,6 +159,7 @@ const Cart = ({ cart, setCart }) => {
                                     onChange={() => setPaymentMethod('cod')}
                                 />
                                 <Form.Check
+                                    inline
                                     type="radio"
                                     label="Thanh toán online"
                                     name="paymentMethod"
@@ -163,19 +167,26 @@ const Cart = ({ cart, setCart }) => {
                                     checked={paymentMethod === 'online'}
                                     onChange={() => setPaymentMethod('online')}
                                 />
-                            </Form.Group>
-                            <Button variant="success" size="lg" onClick={checkout} disabled={!isLoggedIn || loading}>
-                                {loading ? <Spinner animation="border" size="sm" /> : "Thanh Toán"}
-                            </Button>
-                        </div>
-                    </Card.Body>
+                            </div>
+                        </Form.Group>
+                        <Button
+                            variant="success"
+                            size="lg"
+                            className="mt-3"
+                            onClick={checkout}
+                            disabled={!isLoggedIn || loading}
+                        >
+                            {loading ? <Spinner animation="border" size="sm" /> : "Thanh Toán"}
+                        </Button>
+                    </div>
                 </Card>
             )}
-            <div>
-                {paymentMethod === 'online' && orderIdQr && (
+
+            {paymentMethod === 'online' && orderIdQr && (
+                <div className="mt-4 text-center">
                     <MoMoQrCode amount={totalPriceQr} orderIdQr={orderIdQr} />
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

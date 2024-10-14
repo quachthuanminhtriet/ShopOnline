@@ -39,6 +39,11 @@ const Header = ({ setSearchQuery, setCateId }) => {
         navigate('/login');
     };
 
+    const handleNull = () => {
+        setSearchQuery('');
+        setCateId('');
+    }
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -55,11 +60,12 @@ const Header = ({ setSearchQuery, setCateId }) => {
         fetchUser();
     }, []);
 
+
     return (
         <Navbar expand="lg" className="bg-body-tertiary" bg="dark" data-bs-theme="dark">
             <Container>
                 <Navbar.Brand>
-                    <Link to='/' style={{ textDecoration: 'none', color: 'white' }}>QTMT-Shop</Link>
+                    <Link to='/' onClick={handleNull} style={{ textDecoration: 'none', color: 'white' }}>QTMT-Shop</Link>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav" className="d-flex">

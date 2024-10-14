@@ -11,8 +11,8 @@ import Login from './component/User/Login';
 import OrderTracking from './component/Order/OrderTracking';
 import Profile from './component/User/Profile';
 import Register from './component/User/Register';
+import Footer from './Layout/Footer';
 
-// Tạo UserContext
 export const UserContext = createContext();
 
 function App() {
@@ -36,6 +36,7 @@ function App() {
             <Route path='/profile' element={<Profile />} />
           </Routes>
         </Container>
+        <Footer />
       </BrowserRouter>
     </UserContext.Provider>
   );

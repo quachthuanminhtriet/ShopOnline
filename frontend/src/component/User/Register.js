@@ -66,10 +66,12 @@ const Register = () => {
 
     return (
         <Container className="mt-5 d-flex justify-content-center">
-            <div className="register-card p-4 shadow-lg rounded border-light bg-white">
+            <div className="register-card p-4 shadow-lg rounded border-light bg-white w-100" style={{ maxWidth: '600px' }}>
                 <h2 className='text-center mb-4 text-primary'>Đăng Ký Tài Khoản</h2>
+                
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
+
                 <Form onSubmit={handleRegister}>
                     <Form.Group controlId="formBasicUsername" className="mb-3">
                         <Form.Label className="fw-bold">Tên Đăng Nhập</Form.Label>
@@ -110,8 +112,8 @@ const Register = () => {
                             <Form.Control
                                 type="text"
                                 name="first_name"
-                                placeholder="Họ và tên lót"
-                                value={formData.last_name}
+                                placeholder="Họ"
+                                value={formData.first_name}
                                 onChange={handleChange}
                                 required
                                 className="border-secondary"
@@ -127,7 +129,7 @@ const Register = () => {
                                 type="text"
                                 name="last_name"
                                 placeholder="Tên"
-                                value={formData.first_name}
+                                value={formData.last_name}
                                 onChange={handleChange}
                                 required
                                 className="border-secondary"
@@ -173,7 +175,7 @@ const Register = () => {
                             <Form.Control
                                 type="email"
                                 name="email"
-                                placeholder="Nhập địa chỉ email"
+                                placeholder="Nhập email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
@@ -212,6 +214,7 @@ const Register = () => {
                         <Button variant="primary" type="submit" disabled={isLoading} className="w-100 mb-3">
                             {isLoading ? 'Đang tải...' : 'Đăng Ký'}
                         </Button>
+
                         <Link to='/login' className='btn btn-secondary w-100'>
                             Đã có tài khoản? Đăng Nhập
                         </Link>

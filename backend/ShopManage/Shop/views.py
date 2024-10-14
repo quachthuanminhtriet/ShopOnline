@@ -1,3 +1,4 @@
+from django.contrib.admin.templatetags.admin_list import pagination
 from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
@@ -6,6 +7,7 @@ from . import serializers
 from .email import send_notification_to_staff, send_notification_to_user, send_payment_waiting_to_staff
 from .models import User, Customer, Category, Product, ImageProduct, Review, Order, Brand, \
     ImageBanner, OrderItem
+from .paginators import ProductPaginator, ReviewPaginator
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
@@ -13,10 +15,25 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
     serializer_class = serializers.UserSerializer
 
     def get_permissions(self):
-        if self.action in ['get_current_user']:
+        if self.action in ['get_current_user', 'change_password']:
             return [permissions.IsAuthenticated()]
 
         return [permissions.AllowAny()]
+
+    @action(methods=['patch'], url_path='change-password', detail=True)
+    def change_password(self, request, pk=None):
+        if str(request.user.id) != pk:
+            return Response({"error": "Bạn không có quyền thay đổi mật khẩu của người khác."},
+                            status=status.HTTP_403_FORBIDDEN)
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        if not user.check_password(current_password):
+            return Response({"error": "Mật khẩu hiện tại không chính xác."}, status=status.HTTP_400_BAD_REQUEST)
+        user.password = make_password(new_password)
+        user.save()
+
+        return Response({"message": "Mật khẩu đã được thay đổi thành công."}, status=status.HTTP_200_OK)
 
     @action(methods=['get', 'patch'], url_path='current-user', detail=False)
     def get_current_user(self, request):
@@ -79,6 +96,7 @@ class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPI
 class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Product.objects.filter(active=True)
     serializer_class = serializers.ProductSerializer
+    pagination_class = ProductPaginator
 
     def get_queryset(self):
         queryset = self.queryset
@@ -123,6 +141,7 @@ class ReviewViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVi
     queryset = Review.objects.filter(active=True)
     serializer_class = serializers.ReviewSerializer
 
+    # pagination_class = ReviewPaginator
     # permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -158,7 +177,7 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
     def cancel_order(self, request, pk=None):
         order = self.get_object()
         if order.status == 'processing':
-            order.status = 'pending-2'
+            order.status = 'cancelled'
             order.save()
             user_email = order.customer_id.email
             send_notification_to_staff(order.id, "Người dùng đã yêu cầu hủy đơn hàng.", user_email)
@@ -197,7 +216,7 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
         order = self.get_object()
         new_status = request.data.get('status')
 
-        if new_status == 'waiting':  # Chỉ xử lý khi trạng thái là 'waiting'
+        if new_status == 'waiting':
             order.status_payment = 'waiting'
             order.save()
 

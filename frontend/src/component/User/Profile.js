@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Form, Button, Alert, Spinner, Image, Card } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Spinner, Image, Card, Modal } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { useNavigate } from 'react-router-dom';
-import './Profile.css';  // Đảm bảo bạn thêm CSS vào file này
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -19,6 +18,13 @@ const Profile = () => {
     const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [changePasswordData, setChangePasswordData] = useState({
+        current_password: '',
+        new_password: '',
+        confirm_password: '',
+    });
+    const [loadingChangePassword, setLoadingChangePassword] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,7 +42,7 @@ const Profile = () => {
                     email: response.data.email,
                     avatar: response.data.avatar,
                 });
-                setAvatarPreview(response.data.customer.avatar);
+                setAvatarPreview(response.data.avatar);
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin người dùng:", error);
                 setErrorMessage("Không thể lấy thông tin người dùng.");
@@ -101,6 +107,38 @@ const Profile = () => {
         }
     };
 
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setChangePasswordData(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
+
+    const handleChangePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setLoadingChangePassword(true);
+        if (changePasswordData.new_password !== changePasswordData.confirm_password) {
+            setErrorMessage("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+            setLoadingChangePassword(false);
+            return;
+        }
+        try {
+            await APIs.patch(`${endpoints['update']}${user.id}/change-password/`, changePasswordData, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                },
+            });
+            alert("Đã đổi mật khẩu thành công!");
+            setShowChangePasswordModal(false);
+        } catch (error) {
+            console.error("Lỗi khi đổi mật khẩu:", error);
+            setErrorMessage("Đã có lỗi xảy ra khi đổi mật khẩu.");
+        } finally {
+            setLoadingChangePassword(false);
+        }
+    };
+
     if (loading) {
         return <Spinner animation="border" />;
     }
@@ -113,13 +151,12 @@ const Profile = () => {
                     {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
                     <Form onSubmit={handleSubmit} className="profile-form">
-                        {/* Avatar */}
                         <Form.Group controlId="formAvatar" className='text-center mb-4'>
                             <div className="avatar-container">
-                                <Image 
-                                    src={avatarPreview || formData.avatar || '/default-avatar.png'} 
-                                    roundedCircle 
-                                    style={{ width: '150px', height: '150px' }} 
+                                <Image
+                                    src={avatarPreview || formData.avatar || '/default-avatar.png'}
+                                    roundedCircle
+                                    style={{ width: '150px', height: '150px' }}
                                     className="avatar-img"
                                 />
                                 {isEditing && (
@@ -139,7 +176,6 @@ const Profile = () => {
                             </div>
                         </Form.Group>
 
-                        {/* Full Name */}
                         <Form.Group controlId="formFullName" className="mb-3">
                             <Form.Label>Họ và Tên</Form.Label>
                             {isEditing ? (
@@ -167,7 +203,6 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        {/* Birthday */}
                         <Form.Group controlId="formBirthday" className="mb-3">
                             <Form.Label>Ngày sinh</Form.Label>
                             {isEditing ? (
@@ -183,7 +218,6 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        {/* Address */}
                         <Form.Group controlId="formAddress" className="mb-3">
                             <Form.Label>Địa chỉ</Form.Label>
                             {isEditing ? (
@@ -199,7 +233,6 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        {/* Email */}
                         <Form.Group controlId="formEmail" className="mb-3">
                             <Form.Label>Email</Form.Label>
                             {isEditing ? (
@@ -215,7 +248,6 @@ const Profile = () => {
                             )}
                         </Form.Group>
 
-                        {/* Buttons */}
                         <div className="text-center mt-4">
                             {isEditing ? (
                                 <>
@@ -235,20 +267,79 @@ const Profile = () => {
                                     </Button>
                                 </>
                             ) : (
-                                <Button
-                                    variant="secondary"
-                                    onClick={(e) => {
-                                        e.preventDefault(); // Ngăn chặn hành động mặc định
-                                        setIsEditing(true);
-                                    }}
-                                >
-                                    Sửa
-                                </Button>
+                                <>
+                                    <Button
+                                        variant="primary"
+                                        onClick={(e) => {
+                                            e.preventDefault(); // Ngăn chặn hành động mặc định
+                                            setIsEditing(true);
+                                        }}
+                                        className='me-2'
+                                    >
+                                        Sửa
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setShowChangePasswordModal(true)}
+                                    >
+                                        Đổi mật khẩu
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </Form>
                 </Card.Body>
             </Card>
+
+            {/* Change Password Modal */}
+            <Modal show={showChangePasswordModal} onHide={() => setShowChangePasswordModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Đổi Mật Khẩu</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleChangePasswordSubmit}>
+                        {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+                        <Form.Group controlId="formCurrentPassword">
+                            <Form.Label>Mật khẩu hiện tại</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="current_password"
+                                value={changePasswordData.current_password}
+                                onChange={handlePasswordChange}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formNewPassword" className="mt-3">
+                            <Form.Label>Mật khẩu mới</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="new_password"
+                                value={changePasswordData.new_password}
+                                onChange={handlePasswordChange}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formConfirmPassword" className="mt-3">
+                            <Form.Label>Xác nhận mật khẩu mới</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="confirm_password"
+                                value={changePasswordData.confirm_password}
+                                onChange={handlePasswordChange}
+                                required
+                            />
+                        </Form.Group>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowChangePasswordModal(false)}>
+                                Hủy
+                            </Button>
+                            <Button variant="primary" type="submit" disabled={loadingChangePassword}>
+                                {loadingChangePassword ? <Spinner animation="border" size="sm" /> : "Đổi mật khẩu"}
+                            </Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal.Body>
+            </Modal>
         </Container>
     );
 };

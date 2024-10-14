@@ -15,7 +15,8 @@ export const endpoints = {
     'images_product': '/images_product/',
     'orders': '/orders/',
     'order-items': '/order_items/',  
-    'reviews': '/reviews/'
+    'reviews': '/reviews/',
+    'change-password': 'users/change-password',
 }
 
 export const authAPI = (accessToken) => axios.create({

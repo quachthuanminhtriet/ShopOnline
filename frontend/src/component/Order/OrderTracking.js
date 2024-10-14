@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Card, Alert, Spinner, Row, Col, Button, Modal, Image } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 import { FaCheckCircle, FaClock, FaTruck, FaTimesCircle, FaUndo } from 'react-icons/fa';
-import { MdDoNotDisturbAlt, MdOutlinePaid } from 'react-icons/md';
+import { MdOutlinePaid } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 
 const OrderTracking = () => {
     const [orders, setOrders] = useState([]);
@@ -22,7 +23,11 @@ const OrderTracking = () => {
                 setCustomerId(userResponse.data.id);
             } catch (error) {
                 console.error("Error fetching user info:", error);
-                setErrorMessage("Vui lòng đăng nhập hoặc kiểm tra lại thông tin trước khi sử dụng chức năng này!");
+                setErrorMessage(
+                    <>
+                        Vui lòng <Link to='/login'>đăng nhập</Link> hoặc kiểm tra lại thông tin trước khi sử dụng chức năng này!
+                    </>
+                );
                 setLoading(false);
             }
         };
@@ -73,7 +78,7 @@ const OrderTracking = () => {
     const renderStatusPaymentBadge = (status_payment) => {
         switch (status_payment) {
             case 'not-yet':
-                return <span className="badge bg-warning text-dark"><MdDoNotDisturbAlt /> Chờ xác nhận</span>;
+                return <span className="badge bg-warning text-dark"><FaTruck /> Thanh toán sau khi nhận hàng</span>;
             case 'waiting':
                 return <span className="badge bg-warning text-dark"><FaClock /> Chờ thanh toán</span>;
             case 'paid':
@@ -114,6 +119,23 @@ const OrderTracking = () => {
         } catch (error) {
             console.error("Error updating payment status:", error);
             setErrorMessage("Unable to update payment status. Please try again.");
+        } finally {
+            setLoadingAction({ type: null, orderId: null });
+        }
+    };
+
+    const handleReturnOrder = async (orderId) => {
+        setLoadingAction({ type: 'return', orderId });
+        try {
+            const response = await APIs.patch(`${endpoints['orders']}${orderId}/return_order/`, {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+            });
+            if (response.status === 200) {
+                setOrders(orders.map(order => order.id === orderId ? { ...order, status: 'pending-2' } : order));
+            }
+        } catch (error) {
+            console.error("Error returning order:", error);
+            setErrorMessage("Unable to return order. Please try again.");
         } finally {
             setLoadingAction({ type: null, orderId: null });
         }
@@ -170,13 +192,24 @@ const OrderTracking = () => {
                                             {loadingAction.type === 'cancel' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Hủy Đơn Hàng'}
                                         </Button>
                                     )}
-                                    {order.status_payment === 'not-yet' && (
+
+                                    {/* {order.status_payment === 'not-yet' && (
                                         <Button
                                             variant="success"
                                             onClick={() => handleOnlinePayment(order.id)}
                                             disabled={loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id}
                                         >
                                             {loadingAction.type === 'updatePayment' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Thanh Toán Online'}
+                                        </Button>
+                                    )} */}
+
+                                    {order.status === 'delivered' && (
+                                        <Button
+                                            variant="warning"
+                                            onClick={() => handleReturnOrder(order.id)}
+                                            disabled={loadingAction.type === 'return' && loadingAction.orderId === order.id}
+                                        >
+                                            {loadingAction.type === 'return' && loadingAction.orderId === order.id ? <Spinner size="sm" animation="border" /> : 'Trả Đơn Hàng'}
                                         </Button>
                                     )}
                                 </Col>

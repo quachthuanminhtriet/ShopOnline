@@ -20,7 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
         else:
             rep['avatar'] = None  # Or provide a default image URL
         return rep
-        # rep['username'] = instance.user.username
 
     class Meta:
         model = User
@@ -63,7 +62,7 @@ class ImageProductSerializer(serializers.ModelSerializer):
         if instance.image:
             rep['image'] = instance.image.url
         else:
-            rep['image'] = None  # Or provide a default image URL
+            rep['image'] = None
         return rep
 
 
@@ -118,12 +117,6 @@ class BranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = '__all__'
-
-
-# class VoucherSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Voucher
-#         fields = '__all__'
 
 
 class ImageBannerSerializer(serializers.ModelSerializer):

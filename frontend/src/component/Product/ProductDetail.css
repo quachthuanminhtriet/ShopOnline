@@ -1,21 +1,125 @@
+/* ProductDetail.css */
+
 .product-card {
-    border: none;
-    border-radius: 8px;
-}
-
-.price {
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-card .card-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .product-card .btn {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 50px;
+  }
+  
+  .product-card .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    transition: background-color 0.3s ease;
+  }
+  
+  .product-card .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+  }
+  
+  .product-card img {
+    max-width: 100%;
+    border-radius: 15px;
+    object-fit: cover;
+  }
+  
+  .product-detail-title {
     font-size: 1.5rem;
-    color: #d9534f; /* Màu đỏ cho giá */
-}
-
-.original-price {
-    text-decoration: line-through;
-    color: #666; /* Màu xám cho giá gốc */
-    margin-right: 10px;
-}
-
-.discounted-price {
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .product-price {
+    font-size: 1.25rem;
+    color: #28a745;
+  }
+  
+  .review-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .review-card .review-header {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+  
+  .review-card .review-content {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  .star-rating {
+    color: #FFD700;
+  }
+  
+  .review-form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .review-form input, .review-form textarea {
+    margin-bottom: 15px;
+  }
+  
+  .toast-body {
+    font-size: 1rem;
+    color: #fff;
+    background-color: #28a745;
+  }
+  
+  .button-primary {
+    font-size: 1.2rem;
+    background-color: #007bff;
+    border: none;
+    padding: 12px 24px;
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  .review-form .form-label {
     font-weight: bold;
-    font-size: 1.8rem;
-    color: #d9534f; /* Màu đỏ cho giá khuyến mãi */
-}
+  }
+  
+  .card-title {
+    font-weight: bold;
+  }
+  
+  .card {
+    border: none;
+    margin-top: 1rem;
+  }
+  
+  .product-card .btn-outline-primary {
+    border: none;
+    color: #007bff;
+    background: none;
+  }
+  
+  .product-card .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #007bff;
+  }
+  

@@ -5,27 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4f221b20-4c5c-444f-9324-19b0d4f23a38" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../2151050473-Quách Thuần Minh Triết.docx" beforeDir="false" afterPath="$PROJECT_DIR$/../2151050473-Quách Thuần Minh Triết.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ShopManage/Shop/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ShopManage/Shop/email.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/email.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0002_remove_imageproduct_name.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0003_alter_customer_user_alter_order_customer_id_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0004_rename_product_imageproduct_product_id.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0005_rename_product_id_imageproduct_product.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0006_alter_orderitem_selected_image.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0007_alter_order_status_payment.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0008_alter_order_status_payment.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/migrations/0009_rename_customer_id_review_customer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/paginators.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/paginators.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ShopManage/Shop/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/templates/admin/order_stats.html" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/templates/admin/order_stats.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/templates/admin/order_stats_month.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ShopManage/Shop/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ShopManage/Shop/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/ShopManage/Shop/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/Layout/Footer.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Layout/Footer.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/component/Cart/Cart.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Cart/Cart.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Index/Index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Index/Index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/component/Order/OrderTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Order/OrderTracking.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/Product/ProductDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Product/ProductDetail.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/component/Product/ProductDetail.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/Product/ProductDetail.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/component/User/Profile.css" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/User/Profile.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/component/User/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/User/Profile.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../~$51050473-Quách Thuần Minh Triết.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/component/User/Register.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/component/User/Register.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/configs/APIs.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/configs/APIs.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

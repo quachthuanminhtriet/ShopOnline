@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, Spinner, Button, Container, Row, Col, Alert, Form, Toast } from 'react-bootstrap';
-import { FaStar } from 'react-icons/fa';  // For star icons
+import { FaStar } from 'react-icons/fa';
 import APIs, { endpoints } from '../../configs/APIs';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,14 +10,15 @@ const ProductDetail = ({ cart, setCart }) => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [showAlert, setShowAlert] = useState(false);
     const [reviews, setReviews] = useState([]);
     const [newReview, setNewReview] = useState('');
     const [rating, setRating] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [toastShow, setToastShow] = useState(false);  // For success toast
+    const [toastShow, setToastShow] = useState(false);
+    const [showAllReviews, setShowAllReviews] = useState(false); // State to toggle "Show More" reviews
     const navigate = useNavigate();
 
+    // Fetch product and reviews
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) {
@@ -28,7 +29,7 @@ const ProductDetail = ({ cart, setCart }) => {
             try {
                 const res = await APIs.get(`/products/${id}/`);
                 setProduct(res.data);
-                setSelectedImage(res.data.main_image);  // Set the main image on load
+                setSelectedImage(res.data.main_image);
             } catch (error) {
                 console.error("Error fetching the product:", error);
             } finally {
@@ -41,7 +42,6 @@ const ProductDetail = ({ cart, setCart }) => {
                 const res = await APIs.get(endpoints['reviews'], {
                     params: { product_id: id }
                 });
-                // Sort reviews by the created_at field (assuming it's available)
                 const sortedReviews = res.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 setReviews(sortedReviews);
             } catch (error) {
@@ -55,6 +55,7 @@ const ProductDetail = ({ cart, setCart }) => {
         fetchProduct();
     }, [id]);
 
+    // Add product to cart
     const addToCart = () => {
         if (!selectedImage) {
             alert("Please select a product image");
@@ -82,6 +83,7 @@ const ProductDetail = ({ cart, setCart }) => {
         setTimeout(() => setToastShow(false), 3000);
     };
 
+    // Handle review submission
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
 
@@ -112,14 +114,13 @@ const ProductDetail = ({ cart, setCart }) => {
                     rating,
                 },
                 {
-                    headers: { Authorization: `Bearer ${'access_token'}` }
+                    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
                 }
             );
 
             if (response.status === 201) {
                 setNewReview('');
                 setRating(0);
-                // Prepend the new review to the sorted reviews list
                 setReviews(prevReviews => [response.data, ...prevReviews].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
                 alert("Cảm ơn bạn đã đánh giá sản phẩm!");
             } else {
@@ -131,6 +132,12 @@ const ProductDetail = ({ cart, setCart }) => {
         }
     };
 
+    // Toggle "Show More" reviews
+    const toggleShowAllReviews = () => {
+        setShowAllReviews(!showAllReviews);
+    };
+
+    // Loading and Error Handling
     if (loading) {
         return (
             <Container className="text-center mt-5">
@@ -148,15 +155,14 @@ const ProductDetail = ({ cart, setCart }) => {
     }
 
     return (
-        <Container className="mt-5">
+        <Container fluid className="px-5 pt-4">
             {/* Toast Notification */}
-            <Toast show={toastShow} onClose={() => setToastShow(false)} autohide delay={3000} className="position-fixed bottom-0 end-0 m-4">
+            <Toast show={toastShow} onClose={() => setToastShow(false)} autohide delay={3000} className="position-fixed bottom-0 end-0 m-4 rounded-3">
                 <Toast.Body className="text-white bg-success">Product added to cart!</Toast.Body>
             </Toast>
 
             <Row className="justify-content-center">
                 <Col md={8}>
-                    {/* Product Card */}
                     <Card className="product-card shadow-sm mb-4 border-0 rounded-lg">
                         <Row>
                             <Col md={6} className="d-flex align-items-center justify-content-center">
@@ -165,7 +171,7 @@ const ProductDetail = ({ cart, setCart }) => {
                                         variant="top"
                                         src={selectedImage}
                                         alt={product.name}
-                                        className="img-fluid rounded-lg shadow-sm"
+                                        className="img-fluid shadow-lg rounded-3 border"
                                     />
                                 ) : (
                                     <div className="text-center">No image available</div>
@@ -199,7 +205,6 @@ const ProductDetail = ({ cart, setCart }) => {
                                         ))}
                                     </div>
 
-                                    {/* Add to Cart Button */}
                                     <Button
                                         variant="success"
                                         onClick={addToCart}
@@ -210,13 +215,12 @@ const ProductDetail = ({ cart, setCart }) => {
                                     </Button>
                                 </Card.Body>
 
-                                {/* Back Button */}
                                 <Link to="/" className="btn btn-danger mt-3 w-100 rounded-lg">Quay lại danh sách</Link>
                             </Col>
                         </Row>
                     </Card>
 
-                    {/* Image Gallery */}
+                    {/* Product Images */}
                     <Card className="mt-4 border-0 shadow-sm rounded-lg">
                         <Card.Body>
                             <Card.Title className="mb-3">Hình ảnh sản phẩm</Card.Title>
@@ -235,43 +239,44 @@ const ProductDetail = ({ cart, setCart }) => {
                         </Card.Body>
                     </Card>
 
-                    {/* Reviews Section */}
+                    {/* Product Reviews */}
                     <Card className="mt-4 border-0 shadow-sm rounded-lg">
                         <Card.Body>
-                            <Card.Title>Đánh giá sản phẩm</Card.Title>
+                            <Card.Title className="mb-3">Đánh giá sản phẩm</Card.Title>
+
+                            {/* Reviews List */}
                             {reviews.length > 0 ? (
-                                reviews.map((review) => (
-                                    <div key={review.id} className="mb-4 p-3 rounded-lg border bg-light shadow-sm">
-                                        <div className="d-flex align-items-center mb-3">
-                                            <div>
+                                <div>
+                                    {reviews.slice(0, showAllReviews ? reviews.length : 3).map((review) => (
+                                        <div key={review.id} className="mb-4 p-3 rounded-3 border bg-light shadow-sm">
+                                            <div className="d-flex align-items-center mb-3">
                                                 <img
-                                                    src={review.user_avatar || '/default-avatar.png'}  // Fallback to default avatar 
+                                                    src={review.user_avatar || '/default-avatar.png'}
                                                     alt={`${review.user_first_name} avatar`}
                                                     className="rounded-circle"
                                                     style={{ width: '50px', height: '50px', marginRight: '15px' }}
                                                 />
                                                 <span className="fw-bold mx-2">{review.user_first_name}</span>
-                                                <div>
-                                                    <p className='text-center'>{review.content}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div>
+                                                <div className="text-center ms-auto">
                                                     {[...Array(5)].map((_, i) => (
                                                         <FaStar key={i} color={i < review.rating ? '#FFD700' : '#ccc'} />
                                                     ))}
                                                 </div>
                                             </div>
+                                            <p className="text-muted mb-0">{review.content}</p>
                                         </div>
-                                    </div>
-                                ))
+                                    ))}
+                                    <Button variant="link" onClick={toggleShowAllReviews}>
+                                        {showAllReviews ? 'Ẩn bớt' : 'Xem thêm đánh giá'}
+                                    </Button>
+                                </div>
                             ) : (
                                 <p>Chưa có đánh giá nào.</p>
                             )}
 
-                            {/* Review Form */}
-                            {isLoggedIn ? (
-                                <Form onSubmit={handleReviewSubmit}>
+                            {/* Add Review Form */}
+                            {isLoggedIn && (
+                                <Form onSubmit={handleReviewSubmit} className="mt-4">
                                     <Form.Group controlId="reviewText">
                                         <Form.Label>Đánh giá của bạn</Form.Label>
                                         <Form.Control
@@ -281,6 +286,7 @@ const ProductDetail = ({ cart, setCart }) => {
                                             onChange={(e) => setNewReview(e.target.value)}
                                             placeholder="Viết đánh giá..."
                                             required
+                                            style={{ borderRadius: '10px' }}
                                         />
                                     </Form.Group>
                                     <Form.Group controlId="reviewRating" className="mt-2">
@@ -293,14 +299,11 @@ const ProductDetail = ({ cart, setCart }) => {
                                             onChange={(e) => setRating(Number(e.target.value))}
                                             placeholder="Chọn đánh giá"
                                             required
+                                            style={{ borderRadius: '10px' }}
                                         />
                                     </Form.Group>
                                     <Button variant="primary" type="submit" className="mt-3">Gửi đánh giá</Button>
                                 </Form>
-                            ) : (
-                                <Alert variant="warning" className="mt-3">
-                                    Bạn cần <Link to="/login">đăng nhập</Link> trước khi gửi đánh giá.
-                                </Alert>
                             )}
                         </Card.Body>
                     </Card>
